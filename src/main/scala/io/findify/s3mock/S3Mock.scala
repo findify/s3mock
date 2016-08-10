@@ -12,7 +12,7 @@ import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.provider.Provider
-import io.findify.s3mock.request.CreateBucketConfiguration
+import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
@@ -52,7 +52,25 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
               HttpResponse(StatusCodes.OK, entity = provider.getObject(bucket, key.toString()))
             }
           } ~ put {
-            extractRequest { request =>
+            parameter('partNumber, 'uploadId) { (partNumber:String, uploadId:String) =>
+              extractRequest { request =>
+                complete {
+                  val result: Future[HttpResponse] = request.entity.dataBytes
+                    .fold(ByteString(""))((buffer, part) => {
+                      val next = Source.fromString(part.utf8String).getLines().flatMap {
+                        case chunkSignaturePattern(size, sig) => None
+                        case line => Some(line)
+                      }.mkString
+                      buffer ++ ByteString(next)
+                    })
+                    .map(data => {
+                      provider.putObjectMultipartPart(bucket, key.toString(), partNumber.toInt, uploadId, data.utf8String)
+                      HttpResponse(StatusCodes.OK)
+                    }).runWith(Sink.head[HttpResponse])
+                  result
+                }
+              }
+            } ~ extractRequest { request =>
               complete {
                 val result:Future[HttpResponse] = request.entity.dataBytes
                   .fold(ByteString(""))( (buffer, part) => {
@@ -70,7 +88,26 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
               }
             }
           } ~ post {
-            entity(as[String]) { data =>
+            parameter('uploads) { mp =>
+              complete {
+                HttpResponse(StatusCodes.OK, entity = provider.putObjectMultipartStart(bucket, key.toString).toXML.toString())
+              }
+            } ~ parameter('partNumber, 'uploadId) { (partNumber:String, uploadId:String) =>
+              entity(as[String]) { data =>
+                complete {
+                  provider.putObjectMultipartPart(bucket, key.toString, partNumber.toInt, uploadId, data)
+                  HttpResponse(StatusCodes.OK)
+                }
+              }
+            } ~ parameter('uploadId) { uploadId =>
+              entity(as[String]) { xml =>
+                complete {
+                  val request = CompleteMultipartUpload(scala.xml.XML.loadString(xml).head)
+                  val response = provider.putObjectMultipartComplete(bucket, key.toString, uploadId, request)
+                  HttpResponse(StatusCodes.OK, entity = response.toXML.toString)
+                }
+              }
+            } ~ entity(as[String]) { data =>
               complete {
                 provider.putObject(bucket, key.toString, data)
                 HttpResponse(StatusCodes.OK)

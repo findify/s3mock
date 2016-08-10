@@ -21,7 +21,14 @@ class FileProvider(dir:String) extends Provider {
   }
 
   def listBucket(bucket: String, prefix: String) = {
-    val files = File(s"$dir/$prefix").list.filterNot(_.name.startsWith(".")).map(f => Content(f.name, new DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD"))
+    val files = if (File(s"$dir/$bucket/$prefix").isDirectory) {
+      File(s"$dir/$bucket/$prefix").list.filterNot(_.name.startsWith(".")).map(f => Content(f.name, new DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD"))
+    } else {
+      val fullPath = prefix.split("/")
+      val filter = fullPath.last
+      val path = fullPath.dropRight(1).mkString("/")
+      File(s"$dir/$bucket/$path").list.filterNot(_.name.startsWith(".")).filter(_.name.startsWith(filter)).map(f => Content(f.name, new DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD"))
+    }
     ListBucket(bucket, prefix, files.toList)
   }
 

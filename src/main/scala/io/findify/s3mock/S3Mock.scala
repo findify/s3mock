@@ -32,10 +32,12 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
       pathPrefix(Segment) { bucket =>
         pathSingleSlash {
           get {
-            formFieldMap { opts =>
+            parameter('prefix) { prefix =>
               complete {
-                HttpResponse(StatusCodes.OK, entity = provider.listBucket(bucket, opts.getOrElse("prefix", "")).toXML.toString)
+                HttpResponse(StatusCodes.OK, entity = provider.listBucket(bucket, prefix).toXML.toString)
               }
+            } ~ complete {
+              HttpResponse(StatusCodes.OK, entity = provider.listBucket(bucket, "").toXML.toString)
             }
           } ~ put {
             entity(as[String]) { xml =>

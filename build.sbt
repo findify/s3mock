@@ -15,5 +15,6 @@ libraryDependencies ++= Seq(
   "com.github.pathikrit" %% "better-files" % "2.16.0",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0",
   "org.scalatest" %% "scalatest" % "2.2.6" % "test",
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.24" % "test"
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.24" % "test",
+  "commons-io" % "commons-io" % "2.5"
 )

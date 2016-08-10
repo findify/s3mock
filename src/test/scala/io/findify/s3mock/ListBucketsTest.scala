@@ -12,22 +12,7 @@ import scala.collection.JavaConversions._
 /**
   * Created by shutty on 8/9/16.
   */
-class ListBucketsTest extends FlatSpec with Matchers with BeforeAndAfterAll {
-  val s3 = new AmazonS3Client(new BasicAWSCredentials("hello", "world"))
-  s3.setEndpoint("http://localhost:8001")
-
-  val workDir = s"/tmp/${UUID.randomUUID()}"
-  val server = new S3Mock(8001, new FileProvider(workDir))
-
-  override def beforeAll = {
-    if (!File(workDir).exists) File(workDir).createDirectory()
-    server.start
-  }
-  override def afterAll = {
-    server.stop
-    File(workDir).delete()
-  }
-
+class ListBucketsTest extends S3MockTest {
   "s3 mock" should "list empty buckets" in {
     s3.listBuckets().isEmpty shouldBe true
   }

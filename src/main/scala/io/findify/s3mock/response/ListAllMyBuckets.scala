@@ -6,7 +6,7 @@ import org.joda.time.DateTime
   * Created by shutty on 8/9/16.
   */
 case class Bucket(name:String, creationDate:DateTime)
-case class GetBuckets(ownerName:String, ownerUUID:String, buckets:List[Bucket]) {
+case class ListAllMyBuckets(ownerName:String, ownerUUID:String, buckets:List[Bucket]) {
   def toXML =
     <ListAllMyBucketsResult xmlns="http://s3.amazonaws.com/doc/2006-03-01">
       <Owner>

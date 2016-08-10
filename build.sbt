@@ -1,6 +1,6 @@
 name := "s3mock"
 
-version := "0.3.1"
+version := "0.0.1"
 
 organization := "io.findify"
 
@@ -18,3 +18,9 @@ libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-java-sdk-s3" % "1.11.24" % "test",
   "commons-io" % "commons-io" % "2.5"
 )
+
+licenses += ("MIT", url("https://opensource.org/licenses/MIT"))
+
+bintrayOrganization := Some("findify")
+
+parallelExecution in Test := false

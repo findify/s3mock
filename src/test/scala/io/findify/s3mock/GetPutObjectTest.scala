@@ -30,4 +30,9 @@ class GetPutObjectTest extends S3MockTest {
     val response = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.POST, uri = "http://127.0.0.1:8001/getput/foo2", entity = "bar")), 10.seconds)
     IOUtils.toString(s3.getObject("getput", "foo2").getObjectContent, Charset.forName("UTF-8")) shouldBe "bar"
   }
+  it should "put objects in subdirs" in {
+    s3.putObject("getput", "foo1/foo2/foo3", "bar")
+    val result = IOUtils.toString(s3.getObject("getput", "foo1/foo2/foo3").getObjectContent, Charset.forName("UTF-8"))
+    result shouldBe "bar"
+  }
 }

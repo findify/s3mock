@@ -25,7 +25,8 @@ class FileProvider(dir:String) extends Provider {
   }
 
   def createBucket(name:String, bucketConfig:CreateBucketConfiguration) = {
-    File(s"$dir/$name").createDirectory()
+    val bucket = File(s"$dir/$name")
+    if (!bucket.exists) bucket.createDirectory()
     CreateBucket(name)
   }
   def putObject(bucket:String, key:String, data:String): Unit = {
@@ -39,7 +40,7 @@ class FileProvider(dir:String) extends Provider {
           if (!current.exists) current.createDirectory()
           create(s"$path/$head", tail)
       }
-      create(s"$dir", key.split("/").toList)
+      create(s"$dir/$bucket", key.split("/").toList)
     }
     file.write(data)
   }

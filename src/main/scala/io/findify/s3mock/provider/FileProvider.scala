@@ -32,6 +32,7 @@ class FileProvider(dir:String) extends Provider {
     val file = File(s"$dir/$bucket/$key")
     if (!file.exists) {
       def create(path:String, dirs:List[String]):Unit = dirs match {
+        case Nil => Unit
         case fname :: Nil => Unit
         case head :: tail =>
           val current = File(s"$path/$head")

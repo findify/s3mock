@@ -69,6 +69,13 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
                 result
               }
             }
+          } ~ post {
+            entity(as[String]) { data =>
+              complete {
+                provider.putObject(bucket, key.toString, data)
+                HttpResponse(StatusCodes.OK)
+              }
+            }
           }
         }
       } ~ get {

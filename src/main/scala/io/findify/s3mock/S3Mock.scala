@@ -60,7 +60,10 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
         } ~ path(RemainingPath) { key =>
           get {
             complete {
-              HttpResponse(StatusCodes.OK, entity = provider.getObject(bucket, key.toString()))
+              Try(provider.getObject(bucket, key.toString())) match {
+                case Success(data) => HttpResponse(StatusCodes.OK, entity = data)
+                case Failure(_) => HttpResponse(StatusCodes.NotFound)
+              }
             }
           } ~ put {
             parameter('partNumber, 'uploadId) { (partNumber:String, uploadId:String) =>

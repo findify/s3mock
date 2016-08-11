@@ -55,6 +55,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   def getObject(bucket:String, key:String):String = {
     val file = File(s"$dir/$bucket/$key")
     logger.debug(s"reading object for s://$bucket/$key")
+    if (!file.exists) throw NoSuchKeyException(bucket, key)
     IOUtils.toString(file.newInputStream, Charset.forName("UTF-8"))
   }
   def putObjectMultipartStart(bucket:String, key:String):InitiateMultipartUploadResult = {

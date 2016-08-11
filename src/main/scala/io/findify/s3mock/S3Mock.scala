@@ -23,7 +23,7 @@ import scala.io.Source
 class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSystem.create("sqsmock")) extends LazyLogging {
   private var bind:Http.ServerBinding = _
 
-  val chunkSignaturePattern = """([\d]+);chunk\-signature=([a-z0-9]){64}""".r
+  val chunkSignaturePattern = """([0-9a-fA-F]+);chunk\-signature=([a-z0-9]){64}""".r
 
   def start = {
     implicit val mat = ActorMaterializer()
@@ -59,6 +59,7 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
                 complete {
                   val result: Future[HttpResponse] = request.entity.dataBytes
                     .fold(ByteString(""))((buffer, part) => {
+                      val partText = part.utf8String
                       val next = Source.fromString(part.utf8String).getLines().flatMap {
                         case chunkSignaturePattern(size, sig) => None
                         case line => Some(line)

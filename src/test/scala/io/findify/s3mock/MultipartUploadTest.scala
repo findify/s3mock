@@ -48,10 +48,12 @@ class MultipartUploadTest extends S3MockTest {
   }
 
   it should "work with java sdk" in {
+    s3.createBucket("getput")
     val init = s3.initiateMultipartUpload(new InitiateMultipartUploadRequest("getput", "foo4"))
-    val p1 = s3.uploadPart(new UploadPartRequest().withBucketName("getput").withKey("foo4").withPartNumber(1).withUploadId(init.getUploadId).withInputStream(new ByteArrayInputStream("foo".getBytes())))
-    val p2 = s3.uploadPart(new UploadPartRequest().withBucketName("getput").withKey("foo4").withPartNumber(2).withUploadId(init.getUploadId).withInputStream(new ByteArrayInputStream("bar".getBytes())))
+    val p1 = s3.uploadPart(new UploadPartRequest().withBucketName("getput").withPartSize(5).withKey("foo4").withPartNumber(1).withUploadId(init.getUploadId).withInputStream(new ByteArrayInputStream("hellohello".getBytes())))
+    val p2 = s3.uploadPart(new UploadPartRequest().withBucketName("getput").withPartSize(5).withKey("foo4").withPartNumber(2).withUploadId(init.getUploadId).withInputStream(new ByteArrayInputStream("worldworld".getBytes())))
     val result = s3.completeMultipartUpload(new CompleteMultipartUploadRequest("getput", "foo4", init.getUploadId, List(p1.getPartETag, p2.getPartETag).asJava))
     result.getKey shouldBe "foo4"
+    IOUtils.toString(s3.getObject("getput", "foo4").getObjectContent, Charset.forName("UTF-8")) shouldBe "helloworld"
   }
 }

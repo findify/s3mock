@@ -11,12 +11,14 @@ import akka.http.scaladsl.server.Directives._
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import com.typesafe.scalalogging.LazyLogging
+import io.findify.s3mock.error.NoSuchKeyException
 import io.findify.s3mock.provider.Provider
 import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 import scala.io.Source
+import scala.util.{Failure, Success, Try}
 /**
   * Created by shutty on 8/9/16.
   */
@@ -49,8 +51,10 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
             }
           } ~ delete {
             complete {
-              provider.deleteBucket(bucket)
-              HttpResponse(StatusCodes.NoContent)
+              Try(provider.deleteBucket(bucket)) match {
+                case Success(_) => HttpResponse(StatusCodes.NoContent)
+                case Failure(_) => HttpResponse(StatusCodes.NotFound)
+              }
             }
           }
         } ~ path(RemainingPath) { key =>
@@ -123,8 +127,11 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
             }
           } ~ delete {
             complete {
-              provider.deleteObject(bucket, key.toString)
-              HttpResponse(StatusCodes.NoContent)
+              Try(provider.deleteObject(bucket, key.toString)) match {
+                case Success(_) => HttpResponse(StatusCodes.NoContent)
+                case Failure(NoSuchKeyException(_, _)) => HttpResponse(StatusCodes.NotFound)
+              }
+
             }
           }
         }

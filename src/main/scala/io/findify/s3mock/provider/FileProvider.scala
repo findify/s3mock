@@ -4,6 +4,7 @@ import java.util.{Base64, UUID}
 
 import better.files.File
 import com.typesafe.scalalogging.LazyLogging
+import io.findify.s3mock.error.{NoSuchBucketException, NoSuchKeyException}
 import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
 import io.findify.s3mock.response._
 import org.apache.commons.io.IOUtils
@@ -81,12 +82,14 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   def deleteObject(bucket:String, key:String): Unit = {
     val file = File(s"$dir/$bucket/$key")
     logger.debug(s"deleting object s://$bucket/$key")
+    if (!file.exists) throw NoSuchKeyException(bucket, key)
     file.delete()
   }
 
   def deleteBucket(bucket:String): Unit = {
     val file = File(s"$dir/$bucket")
     logger.debug(s"deleting bucket s://$bucket")
+    if (!file.exists) throw NoSuchBucketException(bucket)
     file.delete()
   }
 

@@ -47,6 +47,11 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
                 HttpResponse(StatusCodes.OK).withHeaders(Location(s"/${result.name}"))
               }
             }
+          } ~ delete {
+            complete {
+              provider.deleteBucket(bucket)
+              HttpResponse(StatusCodes.NoContent)
+            }
           }
         } ~ path(RemainingPath) { key =>
           get {
@@ -116,12 +121,17 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
                 HttpResponse(StatusCodes.OK)
               }
             }
+          } ~ delete {
+            complete {
+              provider.deleteObject(bucket, key.toString)
+              HttpResponse(StatusCodes.NoContent)
+            }
           }
         }
       } ~ get {
-          complete {
-            HttpResponse(StatusCodes.OK, entity = provider.listBuckets.toXML.toString)
-          }
+        complete {
+          HttpResponse(StatusCodes.OK, entity = provider.listBuckets.toXML.toString)
+        }
       }
     }
 

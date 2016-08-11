@@ -78,6 +78,18 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     CompleteMultipartUploadResult(bucket, key, "")
   }
 
+  def deleteObject(bucket:String, key:String): Unit = {
+    val file = File(s"$dir/$bucket/$key")
+    logger.debug(s"deleting object s://$bucket/$key")
+    file.delete()
+  }
+
+  def deleteBucket(bucket:String): Unit = {
+    val file = File(s"$dir/$bucket")
+    logger.debug(s"deleting bucket s://$bucket")
+    file.delete()
+  }
+
   private def createDir(path:String) = {
     if (!File(path).exists) {
       def create(path:String, dirs:List[String]):Unit = dirs match {
@@ -91,4 +103,5 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
       create("", path.split("/").toList)
     }
   }
+
 }

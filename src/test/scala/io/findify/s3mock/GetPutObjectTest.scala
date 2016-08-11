@@ -35,4 +35,9 @@ class GetPutObjectTest extends S3MockTest {
     val result = IOUtils.toString(s3.getObject("getput", "foo1/foo2/foo3").getObjectContent, Charset.forName("UTF-8"))
     result shouldBe "bar"
   }
+  it should "not drop \\r\\n symbols" in {
+    s3.putObject("getput", "foorn", "bar\r\nbaz")
+    val result = IOUtils.toString(s3.getObject("getput", "foorn").getObjectContent, Charset.forName("UTF-8"))
+    result shouldBe "bar\r\nbaz"
+  }
 }

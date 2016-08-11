@@ -8,7 +8,7 @@ import akka.http.scaladsl._
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.model.{HttpHeader, HttpResponse, Multipart, StatusCodes}
 import akka.http.scaladsl.server.Directives._
-import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.{Framing, Sink}
 import akka.util.ByteString
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.NoSuchKeyException
@@ -70,14 +70,7 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
               extractRequest { request =>
                 complete {
                   val result: Future[HttpResponse] = request.entity.dataBytes
-                    .fold(ByteString(""))((buffer, part) => {
-                      val partText = part.utf8String
-                      val next = Source.fromString(part.utf8String).getLines().flatMap {
-                        case chunkSignaturePattern(size, sig) => None
-                        case line => Some(line)
-                      }.mkString
-                      buffer ++ ByteString(next)
-                    })
+                    .via(new S3ChunkedProtocolStage)
                     .map(data => {
                       provider.putObjectMultipartPart(bucket, key.toString(), partNumber.toInt, uploadId, data.utf8String)
                       HttpResponse(StatusCodes.OK)
@@ -88,13 +81,7 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
             } ~ extractRequest { request =>
               complete {
                 val result:Future[HttpResponse] = request.entity.dataBytes
-                  .fold(ByteString(""))( (buffer, part) => {
-                    val next = Source.fromString(part.utf8String).getLines().flatMap {
-                      case chunkSignaturePattern(size, sig) => None
-                      case line => Some(line)
-                    }.mkString
-                    buffer ++ ByteString(next)
-                  })
+                  .via(new S3ChunkedProtocolStage)
                   .map(data => {
                     provider.putObject(bucket, key.toString(), data.utf8String)
                     HttpResponse(StatusCodes.OK)

@@ -25,7 +25,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
 
   def listBucket(bucket: String, prefix: String) = {
     val files = if (File(s"$dir/$bucket/$prefix").isDirectory) {
-      File(s"$dir/$bucket/$prefix").list.filterNot(_.name.startsWith(".")).map(f => Content(f.name, new DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD"))
+      File(s"$dir/$bucket/$prefix").list.filterNot(_.name.startsWith(".")).map(f => Content(s"$prefix/${f.name}", new DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD"))
     } else {
       val fullPath = prefix.split("/").filter(_.nonEmpty)
       val filter = fullPath.last
@@ -58,11 +58,11 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     logger.debug(s"writing file for s3://$bucket/$key to $dir/$bucket/$key, bytes = ${data.length}")
     file.write(data)
   }
-  def getObject(bucket:String, key:String):String = {
+  def getObject(bucket:String, key:String):Array[Byte] = {
     val file = File(s"$dir/$bucket/$key")
     logger.debug(s"reading object for s://$bucket/$key")
     if (!file.exists) throw NoSuchKeyException(bucket, key)
-    IOUtils.toString(file.newInputStream, Charset.forName("UTF-8"))
+    IOUtils.toByteArray(file.newInputStream)
   }
   def putObjectMultipartStart(bucket:String, key:String):InitiateMultipartUploadResult = {
     val id = Math.abs(Random.nextLong()).toString

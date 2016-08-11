@@ -1,6 +1,6 @@
 name := "s3mock"
 
-version := "0.0.11"
+version := "0.0.13"
 
 organization := "io.findify"
 
@@ -16,6 +16,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0",
   "org.scalatest" %% "scalatest" % "2.2.6" % "test",
   "com.amazonaws" % "aws-java-sdk-s3" % "1.11.24" % "test",
+  "com.typesafe.akka" %% "akka-stream-testkit" % "2.4.8" % "test",
   "commons-io" % "commons-io" % "2.5"
 )
 

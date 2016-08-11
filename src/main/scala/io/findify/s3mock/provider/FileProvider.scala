@@ -27,12 +27,18 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     val files = if (File(s"$dir/$bucket/$prefix").isDirectory) {
       File(s"$dir/$bucket/$prefix").list.filterNot(_.name.startsWith(".")).map(f => Content(f.name, new DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD"))
     } else {
-      val fullPath = prefix.split("/")
+      val fullPath = prefix.split("/").filter(_.nonEmpty)
       val filter = fullPath.last
       val parent = fullPath.dropRight(1).mkString("/")
       val parentDir = File(s"$dir/$bucket/$parent")
       if (parentDir.exists)
-        File(s"$dir/$bucket/$parent").list.filterNot(_.name.startsWith(".")).filter(_.name.startsWith(filter)).map(f => Content(f.name, new DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD"))
+        File(s"$dir/$bucket/$parent").list
+          .filterNot(_.name.startsWith("."))
+          .filter(_.name.startsWith(filter))
+          .map(f => {
+            val filePath = List(parent, f.name).filter(_.nonEmpty).mkString("/")
+            Content(filePath, new DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD")
+          })
       else
         List()
     }.toList

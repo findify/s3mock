@@ -60,7 +60,7 @@ Scala:
     client.setEndpoint("http://127.0.0.1:8001")
 
     // use it as usual
-    val queue = client.createBucket("foo")
+    client.createBucket("foo")
     client.putObject("foo", "bar", "baz")
 
 Java:

@@ -13,6 +13,7 @@ public class JavaExample {
         api.start();
 
         AmazonS3Client client = new AmazonS3Client(new AnonymousAWSCredentials());
+        client.setEndpoint("http://127.0.0.1:8001");
         client.createBucket("testbucket");
         client.putObject("testbucket", "file/name", "contents");
     }

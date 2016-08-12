@@ -1,6 +1,6 @@
 # S3 mock library for Java/Scala
 
-[![Build Status](https://travis-ci.org/shuttie/s3mock.svg?branch=master)](https://travis-ci.org/shuttie/sqsmock)
+[![Build Status](https://travis-ci.org/shuttie/s3mock.svg?branch=master)](https://travis-ci.org/shuttie/s3mock)
 
 Sqsmock is a web service implementing AWS S3 API, which can be used for local testing of your code using S3
 but without hitting real S3 endpoints.
@@ -15,7 +15,7 @@ Implemented API methods:
 * delete object
 
 Not supported features (these might be implemented later):
-* authentication: s3proxy will accept any credentials without validity checning
+* authentication: s3proxy will accept any credentials without validity checking
 * bucket policy, ACL, versioning
 * object ACL, batch delete
 
@@ -38,7 +38,7 @@ On maven, update your `pom.xml` in the following way:
     // add this entry to <dependencies/>
     <dependency>
         <groupId>io.findify</groupId>
-        <artifactId>sqsmock_2.11</artifactId>
+        <artifactId>s3mock_2.11</artifactId>
         <version>0.1.0</version>
         <type>pom</type>
         <scope>test</scope>

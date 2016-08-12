@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/shuttie/s3mock.svg?branch=master)](https://travis-ci.org/shuttie/s3mock)
 
-Sqsmock is a web service implementing AWS S3 API, which can be used for local testing of your code using S3
+s3mock is a web service implementing AWS S3 API, which can be used for local testing of your code using S3
 but without hitting real S3 endpoints.
 
 Implemented API methods:
@@ -21,7 +21,7 @@ Not supported features (these might be implemented later):
 
 ## Installation
 
-Sqsmock package is available for Scala 2.11 (on Java 8). To install using SBT, add these
+s3mock package is available for Scala 2.11 (on Java 8). To install using SBT, add these
  statements to your `build.sbt`:
 
     resolvers += Resolver.bintrayRepo("findify", "maven")

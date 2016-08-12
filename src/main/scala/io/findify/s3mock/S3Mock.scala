@@ -71,6 +71,7 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
                 complete {
                   val result: Future[HttpResponse] = request.entity.dataBytes
                     .via(new S3ChunkedProtocolStage)
+                    .fold(ByteString(""))(_ ++ _)
                     .map(data => {
                       provider.putObjectMultipartPart(bucket, key.toString(), partNumber.toInt, uploadId, data.utf8String)
                       HttpResponse(StatusCodes.OK)
@@ -82,6 +83,7 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
               complete {
                 val result:Future[HttpResponse] = request.entity.dataBytes
                   .via(new S3ChunkedProtocolStage)
+                  .fold(ByteString(""))(_ ++ _)
                   .map(data => {
                     provider.putObject(bucket, key.toString(), data.utf8String)
                     HttpResponse(StatusCodes.OK)

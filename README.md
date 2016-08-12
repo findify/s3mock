@@ -25,7 +25,7 @@ Sqsmock package is available for Scala 2.11 (on Java 8). To install using SBT, a
  statements to your `build.sbt`:
 
     resolvers += Resolver.bintrayRepo("findify", "maven")
-    libraryDependencies += "io.findify" %% "s3mock" % "0.0.17" % "test",
+    libraryDependencies += "io.findify" %% "s3mock" % "0.1.0" % "test",
 
 On maven, update your `pom.xml` in the following way:
 
@@ -39,7 +39,7 @@ On maven, update your `pom.xml` in the following way:
     <dependency>
         <groupId>io.findify</groupId>
         <artifactId>sqsmock_2.11</artifactId>
-        <version>0.0.17</version>
+        <version>0.1.0</version>
         <type>pom</type>
         <scope>test</scope>
     </dependency>
@@ -48,13 +48,16 @@ On maven, update your `pom.xml` in the following way:
 Scala:
 
     // create and start S3 API mock
-    val api = new S3Mock(port = 8001, provider = new FileProvider("/tmp/s3"))
+    val api = S3Mock(port = 8001, dir = "/tmp/s3")
     api.start()
 
-    // AWS SQS client setup
+    // AWS S3 client setup
     val credentials = new AnonymousAWSCredentials()
     val client = new AmazonS3Client(credentials)
-    client.setEndpoint("http://localhost:8001")
+    // use IP for endpoint address as AWS S3 SDK uses DNS-based bucket access scheme
+    // resulting in attempts to connect to addresses like "bucketname.localhost"
+    // which requires specific DNS setup
+    client.setEndpoint("http://127.0.0.1:8001")
 
     // use it as usual
     val queue = client.createBucket("foo")
@@ -62,7 +65,15 @@ Scala:
 
 Java:
 
-    // TODO
+    S3Mock api = S3Mock.create(8001, "/tmp/s3");
+    api.start();
+            
+    AmazonS3Client client = new AmazonS3Client(new AnonymousAWSCredentials());
+    // use IP endpoint to override DNS-based bucket addressing
+    client.setEndpoint("http://127.0.0.1:8001");
+    client.createBucket("testbucket");
+    client.putObject("testbucket", "file/name", "contents");
+
     
 ## License
 

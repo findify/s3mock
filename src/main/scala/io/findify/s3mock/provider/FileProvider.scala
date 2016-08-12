@@ -53,11 +53,11 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     logger.debug(s"crating bucket $name")
     CreateBucket(name)
   }
-  def putObject(bucket:String, key:String, data:String): Unit = {
+  def putObject(bucket:String, key:String, data:Array[Byte]): Unit = {
     createDir(s"$dir/$bucket/$key")
     val file = File(s"$dir/$bucket/$key")
     logger.debug(s"writing file for s3://$bucket/$key to $dir/$bucket/$key, bytes = ${data.length}")
-    file.write(data)
+    file.write(data)(OpenOptions.default)
   }
   def getObject(bucket:String, key:String):Array[Byte] = {
     val file = File(s"$dir/$bucket/$key")

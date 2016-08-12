@@ -85,7 +85,7 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
                   .via(new S3ChunkedProtocolStage)
                   .fold(ByteString(""))(_ ++ _)
                   .map(data => {
-                    provider.putObject(bucket, key.toString(), data.utf8String)
+                    provider.putObject(bucket, key.toString(), data.toArray)
                     HttpResponse(StatusCodes.OK)
                   }).runWith(Sink.head[HttpResponse])
                 result

@@ -2,6 +2,7 @@ package io.findify.s3mock
 
 import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
+import java.util
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -10,6 +11,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import com.amazonaws.services.s3.model.{CompleteMultipartUploadRequest, InitiateMultipartUploadRequest, UploadPartRequest}
+import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.IOUtils
 
 import scala.collection.JavaConverters._
@@ -59,13 +61,17 @@ class MultipartUploadTest extends S3MockTest {
     IOUtils.toString(s3.getObject("getput", "foo4").getObjectContent, Charset.forName("UTF-8")) shouldBe "helloworld"
   }
   it should "work with large blobs" in {
-    val blob = Random.nextString(10240).getBytes
     val init = s3.initiateMultipartUpload(new InitiateMultipartUploadRequest("getput", "fooLarge"))
-    val p1 = s3.uploadPart(new UploadPartRequest().withBucketName("getput").withPartSize(blob.length).withKey("fooLarge").withPartNumber(1).withUploadId(init.getUploadId).withInputStream(new ByteArrayInputStream(blob)))
-    val p2 = s3.uploadPart(new UploadPartRequest().withBucketName("getput").withPartSize(blob.length).withKey("fooLarge").withPartNumber(2).withUploadId(init.getUploadId).withInputStream(new ByteArrayInputStream(blob)))
-    val result = s3.completeMultipartUpload(new CompleteMultipartUploadRequest("getput", "fooLarge", init.getUploadId, List(p1.getPartETag, p2.getPartETag).asJava))
+    val blobs = for ( i <- 0 to 200) yield {
+      var blob1 = new Array[Byte](10000)
+      Random.nextBytes(blob1)
+      val p1 = s3.uploadPart(new UploadPartRequest().withBucketName("getput").withPartSize(blob1.length).withKey("fooLarge").withPartNumber(i).withUploadId(init.getUploadId).withInputStream(new ByteArrayInputStream(blob1)))
+      blob1 -> p1.getPartETag
+    }
+    val result = s3.completeMultipartUpload(new CompleteMultipartUploadRequest("getput", "fooLarge", init.getUploadId, blobs.map(_._2).asJava))
     result.getKey shouldBe "fooLarge"
-    IOUtils.toByteArray(s3.getObject("getput", "fooLarge").getObjectContent) shouldBe (blob ++ blob)
+    DigestUtils.md5Hex(IOUtils.toByteArray(s3.getObject("getput", "fooLarge").getObjectContent)) shouldBe DigestUtils.md5Hex(blobs.map(_._1).fold(Array[Byte]())(_ ++ _))
+
     
   }
 }

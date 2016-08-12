@@ -111,7 +111,7 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
                   HttpResponse(StatusCodes.OK, entity = response.toXML.toString)
                 }
               }
-            } ~ entity(as[String]) { data =>
+            } ~ entity(as[Array[Byte]]) { data =>
               complete {
                 provider.putObject(bucket, key.toString, data)
                 HttpResponse(StatusCodes.OK)

@@ -1,16 +1,20 @@
 package io.findify.s3mock
 
+import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
 import akka.stream.ActorMaterializer
+import com.amazonaws.services.s3.model.ObjectMetadata
+
 import scala.concurrent.duration._
 import scala.collection.JavaConversions._
 import org.apache.commons.io.IOUtils
 
 import scala.concurrent.Await
+import scala.util.Random
 
 /**
   * Created by shutty on 8/10/16.
@@ -39,5 +43,11 @@ class GetPutObjectTest extends S3MockTest {
     s3.putObject("getput", "foorn", "bar\r\nbaz")
     val result = IOUtils.toString(s3.getObject("getput", "foorn").getObjectContent, Charset.forName("UTF-8"))
     result shouldBe "bar\r\nbaz"
+  }
+  it should "put & get large binary blobs" in {
+    val blob = Random.nextString(1024000).getBytes("UTF-8")
+    s3.putObject("getput", "foolarge", new ByteArrayInputStream(blob), new ObjectMetadata())
+    val result = IOUtils.toByteArray(s3.getObject("getput", "foolarge").getObjectContent)
+    result shouldBe blob
   }
 }

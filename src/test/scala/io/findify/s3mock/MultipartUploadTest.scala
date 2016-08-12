@@ -11,9 +11,11 @@ import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import com.amazonaws.services.s3.model.{CompleteMultipartUploadRequest, InitiateMultipartUploadRequest, UploadPartRequest}
 import org.apache.commons.io.IOUtils
+
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import scala.concurrent.Await
+import scala.util.Random
 
 /**
   * Created by shutty on 8/10/16.
@@ -55,5 +57,15 @@ class MultipartUploadTest extends S3MockTest {
     val result = s3.completeMultipartUpload(new CompleteMultipartUploadRequest("getput", "foo4", init.getUploadId, List(p1.getPartETag, p2.getPartETag).asJava))
     result.getKey shouldBe "foo4"
     IOUtils.toString(s3.getObject("getput", "foo4").getObjectContent, Charset.forName("UTF-8")) shouldBe "helloworld"
+  }
+  it should "work with large blobs" in {
+    val blob = Random.nextString(10240).getBytes
+    val init = s3.initiateMultipartUpload(new InitiateMultipartUploadRequest("getput", "fooLarge"))
+    val p1 = s3.uploadPart(new UploadPartRequest().withBucketName("getput").withPartSize(blob.length).withKey("fooLarge").withPartNumber(1).withUploadId(init.getUploadId).withInputStream(new ByteArrayInputStream(blob)))
+    val p2 = s3.uploadPart(new UploadPartRequest().withBucketName("getput").withPartSize(blob.length).withKey("fooLarge").withPartNumber(2).withUploadId(init.getUploadId).withInputStream(new ByteArrayInputStream(blob)))
+    val result = s3.completeMultipartUpload(new CompleteMultipartUploadRequest("getput", "fooLarge", init.getUploadId, List(p1.getPartETag, p2.getPartETag).asJava))
+    result.getKey shouldBe "fooLarge"
+    IOUtils.toByteArray(s3.getObject("getput", "fooLarge").getObjectContent) shouldBe (blob ++ blob)
+    
   }
 }

@@ -3,6 +3,7 @@ import java.nio.charset.Charset
 import java.util.{Base64, UUID}
 
 import better.files.File
+import better.files.File.OpenOptions
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.{NoSuchBucketException, NoSuchKeyException}
 import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
@@ -70,17 +71,18 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     logger.debug(s"starting multipart upload for s3://$bucket/$key")
     InitiateMultipartUploadResult(bucket, key, id)
   }
-  def putObjectMultipartPart(bucket:String, key:String, partNumber:Int, uploadId:String, data:String) = {
+  def putObjectMultipartPart(bucket:String, key:String, partNumber:Int, uploadId:String, data:Array[Byte]) = {
     val file = File(s"$dir/.mp/$bucket/$key/$uploadId/$partNumber")
     logger.debug(s"uploading multipart chunk $partNumber for s3://$bucket/$key")
-    file.write(data)
+    file.write(data)(OpenOptions.default)
   }
   def putObjectMultipartComplete(bucket:String, key:String, uploadId:String, request:CompleteMultipartUpload) = {
     val files = request.parts.map(part => File(s"$dir/.mp/$bucket/$key/$uploadId/${part.partNumber}"))
-    val parts = files.map(f => IOUtils.toString(f.newInputStream, Charset.forName("UTF-8")))
+    val parts = files.map(f => IOUtils.toByteArray(f.newInputStream))
     createDir(s"$dir/$bucket/$key")
     val file = File(s"$dir/$bucket/$key")
-    file.write(parts.mkString)
+    val data = parts.fold(Array[Byte]())(_ ++ _)
+    file.writeBytes(data.toIterator)
     File(s"$dir/.mp/$bucket/$key").delete()
     logger.debug(s"completed multipart upload for s3://$bucket/$key")
     CompleteMultipartUploadResult(bucket, key, "")

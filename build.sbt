@@ -1,6 +1,6 @@
 name := "s3mock"
 
-version := "0.0.15"
+version := "0.0.16"
 
 organization := "io.findify"
 

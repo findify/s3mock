@@ -73,7 +73,7 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
                     .via(new S3ChunkedProtocolStage)
                     .fold(ByteString(""))(_ ++ _)
                     .map(data => {
-                      provider.putObjectMultipartPart(bucket, key.toString(), partNumber.toInt, uploadId, data.utf8String)
+                      provider.putObjectMultipartPart(bucket, key.toString(), partNumber.toInt, uploadId, data.toArray)
                       HttpResponse(StatusCodes.OK)
                     }).runWith(Sink.head[HttpResponse])
                   result
@@ -97,7 +97,7 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
                 HttpResponse(StatusCodes.OK, entity = provider.putObjectMultipartStart(bucket, key.toString).toXML.toString())
               }
             } ~ parameter('partNumber, 'uploadId) { (partNumber:String, uploadId:String) =>
-              entity(as[String]) { data =>
+              entity(as[Array[Byte]]) { data =>
                 complete {
                   provider.putObjectMultipartPart(bucket, key.toString, partNumber.toInt, uploadId, data)
                   HttpResponse(StatusCodes.OK)

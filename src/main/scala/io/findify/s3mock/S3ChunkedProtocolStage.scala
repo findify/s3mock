@@ -1,6 +1,7 @@
 package io.findify.s3mock
 
 import akka.stream._
+import akka.stream.scaladsl.{Flow, GraphDSL}
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.util.ByteString
 

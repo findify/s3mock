@@ -12,7 +12,7 @@ import akka.stream.scaladsl.{Framing, Sink}
 import akka.util.ByteString
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.NoSuchKeyException
-import io.findify.s3mock.provider.Provider
+import io.findify.s3mock.provider.{FileProvider, Provider}
 import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
 
 import scala.concurrent.{Await, Future}
@@ -140,4 +140,9 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
 
   def stop = Await.result(bind.unbind(), Duration.Inf)
 
+}
+
+object S3Mock {
+  def apply(port:Int, dir:String) = new S3Mock(port, new FileProvider(dir))
+  def create(port:Int, dir:String) = apply(port, dir) // Java API
 }

@@ -25,10 +25,10 @@ class ChunkBuffer extends LazyLogging {
     val sig = headerBuffer.drop(size.length).take(83)
     if ((size.length <= 8) && (sig.length == 83) && sig.startsWith(";chunk-signature=") && sig.endsWith("\r\n")) {
       val header = Header(Integer.parseInt(size.utf8String, 16), size.length + 83, sig.drop(17).dropRight(2).utf8String)
-      //println(s"read header: $header")
+      println(s"read header: $header")
       Some(header)
     } else {
-      //println("cannot read header")
+      println("cannot read header")
       None
     }
   }
@@ -37,10 +37,10 @@ class ChunkBuffer extends LazyLogging {
       buffer = buffer.drop(header.headerSize)
       val chunk = buffer.take(header.chunkSize)
       buffer = buffer.drop(header.chunkSize + 2)
-      //println(s"pulled chunk, size=${header.chunkSize}")
+      println(s"pulled chunk, size=${header.chunkSize}")
       Some(chunk)
     } else {
-      //println(s"not enough data to pull chunk: chunkSize = ${header.chunkSize}, bufferSize = ${buffer.length}")
+      println(s"not enough data to pull chunk: chunkSize = ${header.chunkSize}, bufferSize = ${buffer.length}")
       None
     }
   }

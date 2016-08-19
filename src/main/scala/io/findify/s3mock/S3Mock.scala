@@ -69,25 +69,43 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
             parameter('partNumber, 'uploadId) { (partNumber:String, uploadId:String) =>
               extractRequest { request =>
                 complete {
-                  val result: Future[HttpResponse] = request.entity.dataBytes
-                    .via(new S3ChunkedProtocolStage)
-                    .fold(ByteString(""))(_ ++ _)
-                    .map(data => {
-                      provider.putObjectMultipartPart(bucket, key.toString(), partNumber.toInt, uploadId, data.toArray)
-                      HttpResponse(StatusCodes.OK)
-                    }).runWith(Sink.head[HttpResponse])
+                  val result:Future[HttpResponse] = if (request.headers.exists(_.lowercaseName() == "authorization")) {
+                    request.entity.dataBytes
+                      .via(new S3ChunkedProtocolStage)
+                      .fold(ByteString(""))(_ ++ _)
+                      .map(data => {
+                        provider.putObjectMultipartPart(bucket, key.toString(), partNumber.toInt, uploadId, data.toArray)
+                        HttpResponse(StatusCodes.OK)
+                      }).runWith(Sink.head[HttpResponse])
+                  } else {
+                    request.entity.dataBytes
+                      .fold(ByteString(""))(_ ++ _)
+                      .map(data => {
+                        provider.putObjectMultipartPart(bucket, key.toString(), partNumber.toInt, uploadId, data.toArray)
+                        HttpResponse(StatusCodes.OK)
+                      }).runWith(Sink.head[HttpResponse])
+                  }
                   result
                 }
               }
             } ~ extractRequest { request =>
               complete {
-                val result:Future[HttpResponse] = request.entity.dataBytes
-                  .via(new S3ChunkedProtocolStage)
-                  .fold(ByteString(""))(_ ++ _)
-                  .map(data => {
-                    provider.putObject(bucket, key.toString(), data.toArray)
-                    HttpResponse(StatusCodes.OK)
-                  }).runWith(Sink.head[HttpResponse])
+                val result:Future[HttpResponse] = if (request.headers.exists(_.lowercaseName() == "authorization")) {
+                  request.entity.dataBytes
+                    .via(new S3ChunkedProtocolStage)
+                    .fold(ByteString(""))(_ ++ _)
+                    .map(data => {
+                      provider.putObject(bucket, key.toString(), data.toArray)
+                      HttpResponse(StatusCodes.OK)
+                    }).runWith(Sink.head[HttpResponse])
+                } else {
+                  request.entity.dataBytes
+                    .fold(ByteString(""))(_ ++ _)
+                    .map(data => {
+                      provider.putObject(bucket, key.toString(), data.toArray)
+                      HttpResponse(StatusCodes.OK)
+                    }).runWith(Sink.head[HttpResponse])
+                }
                 result
               }
             }
@@ -139,6 +157,10 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
   }
 
   def stop = Await.result(bind.unbind(), Duration.Inf)
+
+  def putObject(data:ByteString) = {
+
+  }
 
 }
 

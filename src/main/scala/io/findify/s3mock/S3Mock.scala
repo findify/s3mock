@@ -40,6 +40,12 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
             CreateBucket().route(bucket),
             DeleteBucket().route(bucket)
           )
+        } ~ pathEnd {
+          concat(
+            ListBucket().route(bucket),
+            CreateBucket().route(bucket),
+            DeleteBucket().route(bucket)
+          )
         } ~ path(RemainingPath) { key =>
           concat(
             GetObject().route(bucket, key.toString()),

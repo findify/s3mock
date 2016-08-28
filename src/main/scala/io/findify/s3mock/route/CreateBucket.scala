@@ -19,6 +19,10 @@ case class CreateBucket(implicit provider:Provider) extends LazyLogging {
         val result = provider.createBucket(bucket, conf)
         HttpResponse(StatusCodes.OK).withHeaders(Location(s"/${result.name}"))
       }
+    } ~ {
+      complete {
+        "ok"
+      }
     }
   }
 }

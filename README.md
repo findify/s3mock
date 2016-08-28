@@ -28,7 +28,7 @@ s3mock package is available for Scala 2.11 (on Java 8). To install using SBT, ad
     libraryDependencies += "io.findify" %% "s3mock" % "0.1.2" % "test",
 
 On maven, update your `pom.xml` in the following way:
-
+```xml
     // add this entry to <repositories/>
     <repository>
       <id>findify</id>
@@ -43,10 +43,14 @@ On maven, update your `pom.xml` in the following way:
         <type>pom</type>
         <scope>test</scope>
     </dependency>
-
+```
 ## Usage
 Scala:
-
+```scala
+    import io.findify.s3mock.S3Mock
+    import com.amazonaws.auth.AnonymousAWSCredentials
+    import com.amazonaws.services.s3.Amazons3Client
+    
     // create and start S3 API mock
     val api = S3Mock(port = 8001, dir = "/tmp/s3")
     api.start()
@@ -62,8 +66,12 @@ Scala:
     // use it as usual
     client.createBucket("foo")
     client.putObject("foo", "bar", "baz")
-
+```
 Java:
+```java
+    import io.findify.s3mock.S3Mock;
+    import com.amazonaws.auth.AnonymousAWSCredentials;
+    import com.amazonaws.services.s3.Amazons3Client;
 
     S3Mock api = S3Mock.create(8001, "/tmp/s3");
     api.start();
@@ -73,7 +81,7 @@ Java:
     client.setEndpoint("http://127.0.0.1:8001");
     client.createBucket("testbucket");
     client.putObject("testbucket", "file/name", "contents");
-
+```
     
 ## License
 

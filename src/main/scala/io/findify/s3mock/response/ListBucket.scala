@@ -1,6 +1,7 @@
 package io.findify.s3mock.response
 
-import org.joda.time.DateTime
+import akka.http.scaladsl.model.DateTime
+
 
 /**
   * Created by shutty on 8/9/16.
@@ -17,7 +18,7 @@ case class ListBucket(bucket:String, prefix:String, contents:List[Content]) {
         {contents.map(content =>
         <Contents>
           <Key>{content.key}</Key>
-          <LastModified>{content.lastModified.toString}</LastModified>
+          <LastModified>{content.lastModified.toString}Z</LastModified>
           <ETag>{content.md5}</ETag>
           <Size>{content.size}</Size>
           <StorageClass>{content.storageClass}</StorageClass>

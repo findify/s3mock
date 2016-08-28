@@ -1,6 +1,7 @@
 package io.findify.s3mock.response
 
-import org.joda.time.DateTime
+import akka.http.scaladsl.model.DateTime
+
 
 /**
   * Created by shutty on 8/9/16.
@@ -18,7 +19,7 @@ case class ListAllMyBuckets(ownerName:String, ownerUUID:String, buckets:List[Buc
         buckets.map(bucket =>
           <Bucket>
             <Name>{bucket.name}</Name>
-            <CreationDate>{bucket.creationDate.toString}</CreationDate>
+            <CreationDate>{bucket.creationDate.toString}Z</CreationDate>
           </Bucket>)
         }
       </Buckets>

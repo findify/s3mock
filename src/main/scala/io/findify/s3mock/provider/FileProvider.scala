@@ -2,13 +2,13 @@ package io.findify.s3mock.provider
 import java.nio.charset.Charset
 import java.util.{Base64, UUID}
 
+import akka.http.scaladsl.model.DateTime
 import better.files.File
 import better.files.File.OpenOptions
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.{NoSuchBucketException, NoSuchKeyException}
 import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
 import io.findify.s3mock.response._
-import org.joda.time.{DateTime, LocalDateTime}
 import scala.util.Random
 
 /**
@@ -16,14 +16,14 @@ import scala.util.Random
   */
 class FileProvider(dir:String) extends Provider with LazyLogging {
   def listBuckets: ListAllMyBuckets = {
-    val buckets = File(dir).list.map(f => Bucket(f.name, new DateTime(f.lastModifiedTime.toEpochMilli))).toList
+    val buckets = File(dir).list.map(f => Bucket(f.name, DateTime(f.lastModifiedTime.toEpochMilli))).toList
     logger.debug(s"listing buckets: ${buckets.map(_.name)}")
     ListAllMyBuckets("root", UUID.randomUUID().toString, buckets)
   }
 
   def listBucket(bucket: String, prefix: String) = {
     val files = if (File(s"$dir/$bucket/$prefix").isDirectory) {
-      File(s"$dir/$bucket/$prefix").list.filterNot(_.name.startsWith(".")).map(f => Content(s"$prefix/${f.name}", new DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD"))
+      File(s"$dir/$bucket/$prefix").list.filterNot(_.name.startsWith(".")).map(f => Content(s"$prefix/${f.name}", DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD"))
     } else {
       val fullPath = prefix.split("/").filter(_.nonEmpty)
       val filter = fullPath.last
@@ -35,7 +35,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
           .filter(_.name.startsWith(filter))
           .map(f => {
             val filePath = List(parent, f.name).filter(_.nonEmpty).mkString("/")
-            Content(filePath, new DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD")
+            Content(filePath, DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD")
           })
       else
         List()

@@ -1,14 +1,9 @@
 package io.findify.s3mock.awscli
 
-import java.nio.charset.Charset
-
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
-import org.apache.commons.io.IOUtils
-
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.collection.JavaConversions._
-import org.apache.commons.io.IOUtils
 
 /**
   * Created by shutty on 8/28/16.

@@ -31,6 +31,7 @@ class GetPutObjectTest extends S3MockTest {
     implicit val system = ActorSystem.create("test")
     implicit val mat = ActorMaterializer()
     val http = Http(system)
+    if (!s3.listBuckets().exists(_.getName == "getput")) s3.createBucket("getput")
     val response = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.POST, uri = "http://127.0.0.1:8001/getput/foo2", entity = "bar")), 10.seconds)
     IOUtils.toString(s3.getObject("getput", "foo2").getObjectContent, Charset.forName("UTF-8")) shouldBe "bar"
   }

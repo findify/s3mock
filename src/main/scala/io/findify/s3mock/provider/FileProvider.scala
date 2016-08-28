@@ -8,10 +8,7 @@ import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.{NoSuchBucketException, NoSuchKeyException}
 import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
 import io.findify.s3mock.response._
-import org.apache.commons.io.IOUtils
 import org.joda.time.{DateTime, LocalDateTime}
-
-import scala.io.Source
 import scala.util.Random
 
 /**
@@ -63,7 +60,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     val file = File(s"$dir/$bucket/$key")
     logger.debug(s"reading object for s://$bucket/$key")
     if (!file.exists) throw NoSuchKeyException(bucket, key)
-    IOUtils.toByteArray(file.newInputStream)
+    file.byteArray
   }
   def putObjectMultipartStart(bucket:String, key:String):InitiateMultipartUploadResult = {
     val id = Math.abs(Random.nextLong()).toString
@@ -78,7 +75,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   }
   def putObjectMultipartComplete(bucket:String, key:String, uploadId:String, request:CompleteMultipartUpload) = {
     val files = request.parts.map(part => File(s"$dir/.mp/$bucket/$key/$uploadId/${part.partNumber}"))
-    val parts = files.map(f => IOUtils.toByteArray(f.newInputStream))
+    val parts = files.map(f => f.byteArray)
     createDir(s"$dir/$bucket/$key")
     val file = File(s"$dir/$bucket/$key")
     val data = parts.fold(Array[Byte]())(_ ++ _)

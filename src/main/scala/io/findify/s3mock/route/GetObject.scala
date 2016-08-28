@@ -1,8 +1,9 @@
 package io.findify.s3mock.route
 
-import akka.http.scaladsl.model.headers.`Last-Modified`
-import akka.http.scaladsl.model.{DateTime, HttpHeader, HttpResponse, StatusCodes}
+import akka.http.scaladsl.model.headers.{`Content-Length`, `Last-Modified`}
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
+import akka.stream.scaladsl.Source
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.provider.Provider
 
@@ -16,7 +17,7 @@ case class GetObject(implicit provider:Provider) extends LazyLogging {
     complete {
       logger.debug(s"get object: bucket=$bucket, path=$path")
       Try(provider.getObject(bucket, path)) match {
-        case Success(data) => HttpResponse(StatusCodes.OK, entity = data, headers = List(`Last-Modified`(DateTime(1970,1,1))))
+        case Success(data) => HttpResponse(StatusCodes.OK, entity = HttpEntity(data), headers = List(`Last-Modified`(DateTime(1970,1,1))))
         case Failure(_) => HttpResponse(StatusCodes.NotFound)
       }
     }

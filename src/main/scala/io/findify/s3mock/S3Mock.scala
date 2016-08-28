@@ -32,7 +32,7 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
   def start = {
     implicit val mat = ActorMaterializer()
     val http = Http(system)
-    val route = logRequest("request", Logging.InfoLevel) {
+    val route =
       pathPrefix(Segment) { bucket =>
         pathSingleSlash {
           concat(
@@ -58,10 +58,10 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
         }
       } ~ ListBuckets().route() ~ extractRequest { request =>
         complete {
-          "ok"
+          logger.error(s"method not implemented: ${request.method.value} ${request.uri.toString}")
+          HttpResponse(status = StatusCodes.NotImplemented)
         }
       }
-    }
 
     bind = Await.result(http.bindAndHandle(route, "localhost", port), Duration.Inf)
     bind

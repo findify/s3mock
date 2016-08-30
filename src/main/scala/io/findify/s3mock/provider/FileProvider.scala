@@ -15,6 +15,9 @@ import scala.util.Random
   * Created by shutty on 8/9/16.
   */
 class FileProvider(dir:String) extends Provider with LazyLogging {
+  val workDir = File(dir)
+  if (!workDir.exists) workDir.createDirectories()
+
   def listBuckets: ListAllMyBuckets = {
     val buckets = File(dir).list.map(f => Bucket(f.name, DateTime(f.lastModifiedTime.toEpochMilli))).toList
     logger.debug(s"listing buckets: ${buckets.map(_.name)}")

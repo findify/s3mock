@@ -17,7 +17,6 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.0" % "test",
   "com.amazonaws" % "aws-java-sdk-s3" % "1.11.29" % "test",
   "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % "test",
-  //"com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
   "commons-io" % "commons-io" % "2.5" % "test",
   "ch.qos.logback" % "logback-classic" % "1.1.7" % "test"
 )

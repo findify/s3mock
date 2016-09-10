@@ -1,6 +1,5 @@
 package io.findify.s3mock.provider
-import java.nio.charset.Charset
-import java.util.{Base64, UUID}
+import java.util.UUID
 
 import akka.http.scaladsl.model.DateTime
 import better.files.File
@@ -26,7 +25,17 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
 
   def listBucket(bucket: String, prefix: String) = {
     val files = if (File(s"$dir/$bucket/$prefix").isDirectory) {
-      File(s"$dir/$bucket/$prefix").list.filterNot(_.name.startsWith(".")).map(f => Content(s"$prefix/${f.name}", DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD"))
+      File(s"$dir/$bucket/$prefix").list.filterNot(_.name.startsWith("."))
+        .map(f => {
+          val keyPrefix = if(prefix.isEmpty) "" else s"$prefix/"
+          Content(
+            s"$keyPrefix${f.name}",
+            DateTime(f.lastModifiedTime.toEpochMilli),
+            "0",
+            f.size,
+            "STANDARD")
+        }
+        )
     } else {
       val fullPath = prefix.split("/").filter(_.nonEmpty)
       val filter = fullPath.last

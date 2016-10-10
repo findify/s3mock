@@ -21,10 +21,14 @@ class ListBucketTest extends S3MockTest {
   }
   it should "list objects in subfolders with prefix" in {
     s3.createBucket("list2")
-    s3.putObject("list2", "one/foo1", "xxx")
-    s3.putObject("list2", "one/foo2", "xxx")
+    s3.putObject("list2", "one/foo1/1", "xxx")
+    s3.putObject("list2", "one/foo2/2", "xxx")
+    s3.putObject("list2", "one/foo2/3", "xxx")
+    s3.putObject("list2", "one/foo2/4", "xxx")
     s3.putObject("list2", "one/xfoo3", "xxx")
-    s3.listObjects("list2", "one/foo").getObjectSummaries.asScala.toList.map(_.getKey).forall(_.startsWith("one/foo")) shouldBe true
+    val ol = s3.listObjects("list2", "one/f").getObjectSummaries.asScala.toList
+    ol.size shouldBe 4
+    ol.map(_.getKey).forall(_.startsWith("one/foo")) shouldBe true
   }
   it should "return empty list if prefix is incorrect" in {
     s3.createBucket("list3")

@@ -14,7 +14,7 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
   "com.github.pathikrit" %% "better-files" % "2.16.0",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.43" % "test",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.43",
   "org.scalatest" %% "scalatest" % "3.0.0" % "test",
   "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % "test",
   "commons-io" % "commons-io" % "2.5" % "test",

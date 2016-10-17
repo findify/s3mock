@@ -30,7 +30,7 @@ class ListBucketEmptyWorkdirTest extends FlatSpec with Matchers with BeforeAndAf
     s3.putObject("list", "foo1", "xxx")
     s3.putObject("list", "foo2", "xxx")
     val list = s3.listObjects("list").getObjectSummaries.asScala.toList
-    list.map(_.getKey).forall(_.startsWith("/foo")) shouldBe true
+    list.map(_.getKey).forall(_.startsWith("foo")) shouldBe true
   }
 
 

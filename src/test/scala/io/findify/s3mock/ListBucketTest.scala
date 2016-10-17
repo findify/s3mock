@@ -47,6 +47,11 @@ class ListBucketTest extends S3MockTest {
     s3.putObject("list4", "one", "xxx")
     val summaries: util.List[S3ObjectSummary] = s3.listObjects("list4").getObjectSummaries
     summaries.size() shouldBe 1
+    val summary = summaries.get(0)
+    summary.getBucketName shouldBe "list4"
+    summary.getKey shouldBe "one"
+    summary.getSize shouldBe 3
+    summary.getStorageClass shouldBe "STANDARD"
 
     val returnedKey = summaries.last.getKey
     s3.getObject("list4", returnedKey).getKey shouldBe "one"

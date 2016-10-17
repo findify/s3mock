@@ -28,12 +28,11 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
 
   def listBucket(bucket: String, prefix: String) = {
     val prefixNoLeadingSlash = prefix.dropWhile(_ == '/')
-    val isHidden = "/\\.".r
     val bucketFile = File(s"$dir/$bucket/")
     val bucketFileString = bucketFile.toString
     val bucketFiles = bucketFile.listRecursively.filter(f => {
         val fString = f.toString.drop(bucketFileString.length).dropWhile(_ == '/')
-        fString.startsWith(prefixNoLeadingSlash) && isHidden.findAllIn(fString).isEmpty && !f.isDirectory
+        fString.startsWith(prefixNoLeadingSlash) && !fString.startsWith(".") && !f.isDirectory
       })
     val files = bucketFiles.map(f => {Content(f.toString.drop(bucketFileString.length+1).dropWhile(_ == '/'), DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD")})
     logger.debug(s"listing bucket contents: ${files.map(_.key)}")

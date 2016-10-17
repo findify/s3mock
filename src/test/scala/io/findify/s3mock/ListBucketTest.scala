@@ -1,5 +1,9 @@
 package io.findify.s3mock
 
+import java.util
+
+import com.amazonaws.services.s3.model.S3ObjectSummary
+
 import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 
@@ -37,5 +41,14 @@ class ListBucketTest extends S3MockTest {
     s3.putObject("list3", "one/xfoo3", "xxx")
     s3.listObjects("list3", "qaz/qax").getObjectSummaries.asScala.isEmpty shouldBe true
 
+  }
+  it should "return keys with valid keys (when no prefix given)" in {
+    s3.createBucket("list4")
+    s3.putObject("list4", "one", "xxx")
+    val summaries: util.List[S3ObjectSummary] = s3.listObjects("list4").getObjectSummaries
+    summaries.size() shouldBe 1
+
+    val returnedKey = summaries.last.getKey
+    s3.getObject("list4", returnedKey).getKey shouldBe "one"
   }
 }

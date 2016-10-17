@@ -1,14 +1,16 @@
 package io.findify.s3mock.provider
-import java.nio.charset.Charset
-import java.util.{Base64, UUID}
+import java.io.{ObjectInputStream, ObjectOutputStream}
+import java.util.UUID
 
 import akka.http.scaladsl.model.DateTime
 import better.files.File
 import better.files.File.OpenOptions
+import com.amazonaws.services.s3.model.ObjectMetadata
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.{NoSuchBucketException, NoSuchKeyException}
 import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
 import io.findify.s3mock.response._
+
 import scala.util.Random
 
 /**
@@ -44,11 +46,24 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     logger.debug(s"crating bucket $name")
     CreateBucket(name)
   }
-  def putObject(bucket:String, key:String, data:Array[Byte]): Unit = {
+  def putObject(bucket:String, key:String, data:Array[Byte], objectMetadata: ObjectMetadata = null): Unit = {
     createDir(s"$dir/$bucket/$key")
     val file = File(s"$dir/$bucket/$key")
     logger.debug(s"writing file for s3://$bucket/$key to $dir/$bucket/$key, bytes = ${data.length}")
     file.write(data)(OpenOptions.default)
+
+    if(objectMetadata != null) {
+      val split = key.split("/").toBuffer
+      val metaFileName = split.dropRight(1)
+      metaFileName.append(s".${split.last}")
+
+      val metaDataFile = File(s"$dir/$bucket/${metaFileName.mkString}")
+
+      val stream: ObjectOutputStream = new ObjectOutputStream(metaDataFile.newOutputStream(OpenOptions.default))
+      stream.writeObject(objectMetadata)
+      stream.flush()
+      stream.close()
+    }
   }
   def getObject(bucket:String, key:String):Array[Byte] = {
     val file = File(s"$dir/$bucket/$key")
@@ -56,6 +71,17 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     if (!file.exists) throw NoSuchKeyException(bucket, key)
     file.byteArray
   }
+
+  def getMetaData(bucket:String, key:String):ObjectMetadata = {
+    val split = key.split("/").toBuffer
+    val metaFileName = split.dropRight(1)
+    metaFileName.append(s".${split.last}")
+
+    val file = File(s"$dir/$bucket/${metaFileName.mkString}")
+    logger.debug(s"reading object for s://$bucket/${metaFileName.mkString}")
+    if (!file.exists) null else new ObjectInputStream(file.newInputStream).readObject().asInstanceOf[ObjectMetadata]
+  }
+
   def putObjectMultipartStart(bucket:String, key:String):InitiateMultipartUploadResult = {
     val id = Math.abs(Random.nextLong()).toString
     createDir(s"$dir/.mp/$bucket/$key/$id/.keep")

@@ -107,7 +107,6 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   }
 
   def copyObject(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String): CopyObjectResult = {
-    createDir(s"$dir/$destBucket/$destKey")
     val sourceFile = File(s"$dir/$sourceBucket/$sourceKey")
     val destFile = File(s"$dir/$destBucket/$destKey")
     sourceFile.copyTo(destFile, overwrite = true)

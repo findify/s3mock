@@ -46,8 +46,8 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     CreateBucket(name)
   }
   def putObject(bucket:String, key:String, data:Array[Byte], objectMetadata: ObjectMetadata = null): Unit = {
-    createDir(s"$dir/$bucket/$key")
     val file = File(s"$dir/$bucket/$key")
+    file.createIfNotExists(createParents = true)
     logger.debug(s"writing file for s3://$bucket/$key to $dir/$bucket/$key, bytes = ${data.length}")
     file.write(data)(OpenOptions.default)
 
@@ -85,7 +85,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
 
   def putObjectMultipartStart(bucket:String, key:String):InitiateMultipartUploadResult = {
     val id = Math.abs(Random.nextLong()).toString
-    createDir(s"$dir/.mp/$bucket/$key/$id/.keep")
+    File(s"$dir/.mp/$bucket/$key/$id/.keep").createIfNotExists(createParents = true)
     logger.debug(s"starting multipart upload for s3://$bucket/$key")
     InitiateMultipartUploadResult(bucket, key, id)
   }
@@ -97,8 +97,8 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   def putObjectMultipartComplete(bucket:String, key:String, uploadId:String, request:CompleteMultipartUpload) = {
     val files = request.parts.map(part => File(s"$dir/.mp/$bucket/$key/$uploadId/${part.partNumber}"))
     val parts = files.map(f => f.byteArray)
-    createDir(s"$dir/$bucket/$key")
     val file = File(s"$dir/$bucket/$key")
+    file.createIfNotExists(createParents = true)
     val data = parts.fold(Array[Byte]())(_ ++ _)
     file.writeBytes(data.toIterator)
     File(s"$dir/.mp/$bucket/$key").delete()
@@ -129,20 +129,6 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     logger.debug(s"deleting bucket s://$bucket")
     if (!file.exists) throw NoSuchBucketException(bucket)
     file.delete()
-  }
-
-  private def createDir(path:String) = {
-    if (!File(path).exists) {
-      def create(path:String, dirs:List[String]):Unit = dirs match {
-        case Nil => Unit
-        case fname :: Nil => Unit
-        case head :: tail =>
-          val current = File(s"$path/$head")
-          if (!current.exists) current.createDirectory()
-          create(s"$path/$head", tail)
-      }
-      create("", path.split("/").toList)
-    }
   }
 
 }

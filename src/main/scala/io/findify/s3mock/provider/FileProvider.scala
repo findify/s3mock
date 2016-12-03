@@ -51,18 +51,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     logger.debug(s"writing file for s3://$bucket/$key to $dir/$bucket/$key, bytes = ${data.length}")
     file.write(data)(OpenOptions.default)
 
-    if(objectMetadata != null) {
-      val split = key.split("/").toBuffer
-      val metaFileName = split.dropRight(1)
-      metaFileName.append(s".${split.last}")
-
-      val metaDataFile = File(s"$dir/$bucket/${metaFileName.mkString}")
-
-      val stream: ObjectOutputStream = new ObjectOutputStream(metaDataFile.newOutputStream(OpenOptions.default))
-      stream.writeObject(objectMetadata)
-      stream.flush()
-      stream.close()
-    }
+    if(objectMetadata != null) putMetaData(bucket, key, objectMetadata)
   }
   def getObject(bucket:String, key:String):Array[Byte] = {
     val file = File(s"$dir/$bucket/$key")
@@ -79,6 +68,19 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     val file = File(s"$dir/$bucket/${metaFileName.mkString}")
     logger.debug(s"reading object for s://$bucket/${metaFileName.mkString}")
     if (!file.exists) null else new ObjectInputStream(file.newInputStream).readObject().asInstanceOf[ObjectMetadata]
+  }
+
+  def putMetaData(bucket:String, key:String, meta: ObjectMetadata) = {
+    val split = key.split("/").toBuffer
+    val metaFileName = split.dropRight(1)
+    metaFileName.append(s".${split.last}")
+
+    val metaDataFile = File(s"$dir/$bucket/${metaFileName.mkString}")
+
+    val stream: ObjectOutputStream = new ObjectOutputStream(metaDataFile.newOutputStream(OpenOptions.default))
+    stream.writeObject(meta)
+    stream.flush()
+    stream.close()
   }
 
   def putObjectMultipartStart(bucket:String, key:String):InitiateMultipartUploadResult = {
@@ -101,7 +103,18 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     file.writeBytes(data.toIterator)
     File(s"$dir/.mp/$bucket/$key").delete()
     logger.debug(s"completed multipart upload for s3://$bucket/$key")
-    CompleteMultipartUploadResult(bucket, key, "")
+    CompleteMultipartUploadResult(bucket, key, file.md5)
+  }
+
+  def copyObject(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String): CopyObjectResult = {
+    createDir(s"$dir/$destBucket/$destKey")
+    val sourceFile = File(s"$dir/$sourceBucket/$sourceKey")
+    val destFile = File(s"$dir/$destBucket/$destKey")
+    sourceFile.copyTo(destFile, overwrite = true)
+    logger.debug(s"Copied s3://$sourceBucket/$sourceKey to s3://$destBucket/$destKey")
+    val sourceMeta = getMetaData(sourceBucket, sourceKey)
+    putMetaData(destBucket, destKey, sourceMeta)
+    CopyObjectResult(DateTime(sourceFile.lastModifiedTime.toEpochMilli), destFile.md5)
   }
 
   def deleteObject(bucket:String, key:String): Unit = {

@@ -9,6 +9,6 @@ case class CompleteMultipartUploadResult(bucket:String, key:String, etag:String)
       <Location>http://s3.amazonaws.com/{bucket}/{key}</Location>
       <Bucket>{bucket}</Bucket>
       <Key>{key}</Key>
-      <ETag>"3858f62230ac3c915f300c664312c11f-9"</ETag>
+      <ETag>"{etag}"</ETag>
     </CompleteMultipartUploadResult>
 }

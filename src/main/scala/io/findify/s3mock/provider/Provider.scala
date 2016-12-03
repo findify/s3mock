@@ -19,4 +19,7 @@ trait Provider {
   def putObjectMultipartComplete(bucket:String, key:String, uploadId:String, request:CompleteMultipartUpload):CompleteMultipartUploadResult
   def deleteObject(bucket:String, key:String):Unit
   def deleteBucket(bucket:String):Unit
+  def copyObject(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String): CopyObjectResult
 }
+
+

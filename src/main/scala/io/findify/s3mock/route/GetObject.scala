@@ -26,17 +26,25 @@ case class GetObject(implicit provider: Provider) extends LazyLogging {
 
       Try(provider.getObject(bucket, path)) match {
         case Success(data) =>
-          val meta: ObjectMetadata = provider.getMetaData(bucket, path)
-          val entity: Strict = if (meta != null) ContentType.parse(meta.getContentType) match {
-            case Right(value) => HttpEntity(value, data)
-            case Left(error) => HttpEntity(data)
-          } else HttpEntity(data)
+          provider.getMetaData(bucket, path) match {
+            case Some(meta) =>
+              val entity: Strict = ContentType.parse(meta.getContentType) match {
+                case Right(value) => HttpEntity(value, data)
+                case Left(error) => HttpEntity(data)
+              }
 
-          HttpResponse(
-            status = StatusCodes.OK,
-            entity = entity,
-            headers = `Last-Modified`(DateTime(1970, 1, 1)) :: metadataToHeaderList(meta)
-          )
+              HttpResponse(
+                status = StatusCodes.OK,
+                entity = entity,
+                headers = `Last-Modified`(DateTime(1970, 1, 1)) :: metadataToHeaderList(meta)
+              )
+            case None =>
+              HttpResponse(
+                status = StatusCodes.OK,
+                entity = HttpEntity(data),
+                headers = List(`Last-Modified`(DateTime(1970, 1, 1)))
+              )
+          }
         case Failure(_) => HttpResponse(StatusCodes.NotFound)
       }
     }
@@ -44,7 +52,6 @@ case class GetObject(implicit provider: Provider) extends LazyLogging {
 
   protected def metadataToHeaderList(metadata: ObjectMetadata): List[RawHeader] = {
     val headerList = scala.collection.mutable.ListBuffer.empty[RawHeader]
-    if (metadata == null) return headerList.toList
 
     val rawMetadata: mutable.Map[String, AnyRef] = metadata.getRawMetadata.asScala
     if (rawMetadata != null) {

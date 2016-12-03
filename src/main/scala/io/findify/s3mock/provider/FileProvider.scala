@@ -60,14 +60,14 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     file.byteArray
   }
 
-  def getMetaData(bucket:String, key:String):ObjectMetadata = {
+  def getMetaData(bucket:String, key:String): Option[ObjectMetadata] = {
     val split = key.split("/").toBuffer
     val metaFileName = split.dropRight(1)
     metaFileName.append(s".${split.last}")
 
     val file = File(s"$dir/$bucket/${metaFileName.mkString}")
     logger.debug(s"reading object for s://$bucket/${metaFileName.mkString}")
-    if (!file.exists) null else new ObjectInputStream(file.newInputStream).readObject().asInstanceOf[ObjectMetadata]
+    if (!file.exists) None else Some(new ObjectInputStream(file.newInputStream).readObject().asInstanceOf[ObjectMetadata])
   }
 
   def putMetaData(bucket:String, key:String, meta: ObjectMetadata) = {
@@ -113,7 +113,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     sourceFile.copyTo(destFile, overwrite = true)
     logger.debug(s"Copied s3://$sourceBucket/$sourceKey to s3://$destBucket/$destKey")
     val sourceMeta = getMetaData(sourceBucket, sourceKey)
-    putMetaData(destBucket, destKey, sourceMeta)
+    sourceMeta.foreach(meta => putMetaData(destBucket, destKey, meta))
     CopyObjectResult(DateTime(sourceFile.lastModifiedTime.toEpochMilli), destFile.md5)
   }
 

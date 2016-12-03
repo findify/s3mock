@@ -13,7 +13,7 @@ trait Provider {
   def createBucket(name:String, bucketConfig:CreateBucketConfiguration):CreateBucket
   def putObject(bucket:String, key:String, data:Array[Byte], metadata: ObjectMetadata = null):Unit
   def getObject(bucket:String, key:String):Array[Byte]
-  def getMetaData(bucket:String, key:String):ObjectMetadata
+  def getMetaData(bucket:String, key:String):Option[ObjectMetadata]
   def putObjectMultipartStart(bucket:String, key:String):InitiateMultipartUploadResult
   def putObjectMultipartPart(bucket:String, key:String, partNumber:Int, uploadId:String, data:Array[Byte]):Unit
   def putObjectMultipartComplete(bucket:String, key:String, uploadId:String, request:CompleteMultipartUpload):CompleteMultipartUploadResult

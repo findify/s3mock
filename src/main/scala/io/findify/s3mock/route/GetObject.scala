@@ -51,29 +51,23 @@ case class GetObject(implicit provider: Provider) extends LazyLogging {
   }
 
   protected def metadataToHeaderList(metadata: ObjectMetadata): List[RawHeader] = {
-    val headerList = scala.collection.mutable.ListBuffer.empty[RawHeader]
+    val headers = Option(metadata.getRawMetadata)
+      .map(_.asScala.toMap)
+      .map(_.map { case (key, value) => RawHeader(key, value.toString)}.toList)
+      .toList.flatten
 
-    val rawMetadata: mutable.Map[String, AnyRef] = metadata.getRawMetadata.asScala
-    if (rawMetadata != null) {
-      import scala.collection.JavaConversions._
-      for (entry <- rawMetadata.entrySet) {
-        headerList.append(RawHeader(entry.getKey, entry.getValue.toString))
-      }
-    }
+    val httpExpires = Option(metadata.getHttpExpiresDate).map(date => RawHeader(Headers.EXPIRES, DateUtils.formatRFC822Date(date)))
 
-    val httpExpiresDate: Date = metadata.getHttpExpiresDate
-    if (httpExpiresDate != null) headerList.append(RawHeader(Headers.EXPIRES, DateUtils.formatRFC822Date(httpExpiresDate)))
-    val userMetadata: mutable.Map[String, String] = metadata.getUserMetadata.asScala
-    if (userMetadata != null) {
-      import scala.collection.JavaConversions._
-      for (entry <- userMetadata.entrySet) {
-        var key: String = entry.getKey
-        var value: String = entry.getValue
-        if (key != null) key = key.trim
-        if (value != null) value = value.trim
-        headerList.append(RawHeader(Headers.S3_USER_METADATA_PREFIX + key, value))
-      }
-    }
-    headerList.toList
+    val userHeaders = Option(metadata.getUserMetadata)
+      .map(_.asScala.toMap)
+      .map(_.map { case (key, value) => {
+        val name = Option(key).map(_.trim).getOrElse("")
+        val hvalue = Option(value).map(_.trim).getOrElse("")
+        RawHeader(Headers.S3_USER_METADATA_PREFIX + name, hvalue)
+      }}.toList)
+      .toList
+      .flatten
+
+    headers ++ httpExpires.toList ++ userHeaders
   }
 }

@@ -21,8 +21,10 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
   override def beforeAll = {
     if (!File(workDir).exists) File(workDir).createDirectory()
     server.start
+    super.beforeAll
   }
   override def afterAll = {
+    super.afterAll
     server.stop
     File(workDir).delete()
   }

@@ -10,6 +10,7 @@ import com.amazonaws.services.s3.Headers
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.util.DateUtils
 import com.typesafe.scalalogging.LazyLogging
+import io.findify.s3mock.error.NoSuchKeyException
 import io.findify.s3mock.provider.Provider
 
 import scala.collection.JavaConverters._
@@ -45,6 +46,11 @@ case class GetObject(implicit provider: Provider) extends LazyLogging {
                 headers = List(`Last-Modified`(DateTime(1970, 1, 1)))
               )
           }
+        case Failure(e: NoSuchKeyException) =>
+          HttpResponse(
+            StatusCodes.NotFound,
+            entity = e.toXML.toString()
+          )
         case Failure(_) => HttpResponse(StatusCodes.NotFound)
       }
     }

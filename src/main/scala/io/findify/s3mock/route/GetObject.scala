@@ -1,7 +1,5 @@
 package io.findify.s3mock.route
 
-import java.util.Date
-
 import akka.http.scaladsl.model.HttpEntity.Strict
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.{RawHeader, `Last-Modified`}
@@ -14,7 +12,6 @@ import io.findify.s3mock.error.NoSuchKeyException
 import io.findify.s3mock.provider.Provider
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
 /**

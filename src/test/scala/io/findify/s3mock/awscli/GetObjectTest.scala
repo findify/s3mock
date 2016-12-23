@@ -7,7 +7,6 @@ import com.amazonaws.services.s3.model.AmazonS3Exception
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.collection.JavaConversions._
 
 /**
   * Created by shutty on 8/28/16.

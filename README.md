@@ -50,7 +50,7 @@ Scala:
 ```scala
     import io.findify.s3mock.S3Mock
     import com.amazonaws.auth.AnonymousAWSCredentials
-    import com.amazonaws.services.s3.Amazons3Client
+    import com.amazonaws.services.s3.AmazonS3Client
     
     // create and start S3 API mock
     val api = S3Mock(port = 8001, dir = "/tmp/s3")
@@ -72,7 +72,7 @@ Java:
 ```java
     import io.findify.s3mock.S3Mock;
     import com.amazonaws.auth.AnonymousAWSCredentials;
-    import com.amazonaws.services.s3.Amazons3Client;
+    import com.amazonaws.services.s3.AmazonS3Client;
 
     S3Mock api = S3Mock.create(8001, "/tmp/s3");
     api.start();

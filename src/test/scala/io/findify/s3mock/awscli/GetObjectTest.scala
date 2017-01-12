@@ -3,10 +3,10 @@ package io.findify.s3mock.awscli
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
+import com.amazonaws.services.s3.model.AmazonS3Exception
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.collection.JavaConversions._
 
 /**
   * Created by shutty on 8/28/16.
@@ -32,5 +32,13 @@ class GetObjectTest extends AWSCliTest {
     s3.putObject("awscli-head2", "foo", "bar")
     val meta = s3.getObjectMetadata("awscli-head2", "foo")
     meta.getContentLength shouldBe 3
+  }
+  it should "respond with status 404" in {
+    s3.createBucket("awscli-404")
+    val exc = intercept[AmazonS3Exception] {
+      s3.getObject("awscli-404", "doesnotexist")
+    }
+    exc.getStatusCode shouldBe 404
+    exc.getErrorCode shouldBe "NoSuchKey"
   }
 }

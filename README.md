@@ -54,7 +54,7 @@ Scala:
     
     // create and start S3 API mock
     val api = S3Mock(port = 8001, dir = "/tmp/s3")
-    api.start()
+    api.start
 
     // AWS S3 client setup
     val credentials = new AnonymousAWSCredentials()

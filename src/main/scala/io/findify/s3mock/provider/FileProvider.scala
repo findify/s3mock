@@ -49,7 +49,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     val file = File(s"$dir/$bucket/$key")
     file.createIfNotExists(createParents = true)
     logger.debug(s"writing file for s3://$bucket/$key to $dir/$bucket/$key, bytes = ${data.length}")
-    file.write(data)(OpenOptions.default)
+    file.writeByteArray(data)(OpenOptions.default)
 
     if(objectMetadata != null) putMetaData(bucket, key, objectMetadata)
   }
@@ -92,7 +92,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   def putObjectMultipartPart(bucket:String, key:String, partNumber:Int, uploadId:String, data:Array[Byte]) = {
     val file = File(s"$dir/.mp/$bucket/$key/$uploadId/$partNumber")
     logger.debug(s"uploading multipart chunk $partNumber for s3://$bucket/$key")
-    file.write(data)(OpenOptions.default)
+    file.writeByteArray(data)(OpenOptions.default)
   }
   def putObjectMultipartComplete(bucket:String, key:String, uploadId:String, request:CompleteMultipartUpload) = {
     val files = request.parts.map(part => File(s"$dir/.mp/$bucket/$key/$uploadId/${part.partNumber}"))

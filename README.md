@@ -22,11 +22,11 @@ Not supported features (these might be implemented later):
 
 ## Installation
 
-s3mock package is available for Scala 2.11 (on Java 8). To install using SBT, add these
+s3mock package is available for Scala 2.11/2.12 (on Java 8). To install using SBT, add these
  statements to your `build.sbt`:
 
     resolvers += Resolver.bintrayRepo("findify", "maven")
-    libraryDependencies += "io.findify" %% "s3mock" % "0.1.5" % "test",
+    libraryDependencies += "io.findify" %% "s3mock" % "0.1.6" % "test",
 
 On maven, update your `pom.xml` in the following way:
 ```xml
@@ -39,7 +39,7 @@ On maven, update your `pom.xml` in the following way:
     // add this entry to <dependencies/>
     <dependency>
         <groupId>io.findify</groupId>
-        <artifactId>s3mock_2.11</artifactId>
+        <artifactId>s3mock_2.12</artifactId>
         <version>0.1.5</version>
         <type>pom</type>
         <scope>test</scope>

@@ -19,7 +19,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
   "com.amazonaws" % "aws-java-sdk-s3" % "1.11.83",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-  "commons-io" % "commons-io" % "2.5" % "test",
   "ch.qos.logback" % "logback-classic" % "1.1.9" % "test"
 )
 

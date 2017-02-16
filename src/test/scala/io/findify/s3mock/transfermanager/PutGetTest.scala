@@ -1,12 +1,12 @@
 package io.findify.s3mock.transfermanager
 
 import java.io.{ByteArrayInputStream, File, FileInputStream}
-import java.nio.charset.Charset
 
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder
 import io.findify.s3mock.S3MockTest
-import org.apache.commons.io.IOUtils
+
+import scala.io.Source
 
 /**
   * Created by shutty on 11/23/16.
@@ -30,7 +30,7 @@ class PutGetTest extends S3MockTest {
     val file = File.createTempFile("hello1", ".s3mock")
     val download = tm.download("tm1", "hello1", file)
     download.waitForCompletion()
-    val result = IOUtils.toString(new FileInputStream(file), Charset.forName("UTF-8"))
+    val result = Source.fromInputStream(new FileInputStream(file), "UTF-8").mkString
     result shouldBe "hello"
   }
 
@@ -39,6 +39,6 @@ class PutGetTest extends S3MockTest {
     val result = copy.waitForCopyResult()
     result.getDestinationKey shouldBe "hello2"
     val hello2 = s3.getObject("tm1", "hello2")
-    IOUtils.toString(hello2.getObjectContent, Charset.forName("UTF-8")) shouldBe "hello"
+    getContent(hello2) shouldBe "hello"
   }
 }

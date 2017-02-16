@@ -1,9 +1,8 @@
 package io.findify.s3mock
 
-import java.nio.charset.Charset
+import java.io.ByteArrayInputStream
 
 import com.amazonaws.services.s3.model.{ObjectMetadata, S3Object}
-import org.apache.commons.io.IOUtils
 
 import scala.collection.JavaConversions._
 
@@ -15,7 +14,7 @@ class GetPutObjectWithMetadataTest extends S3MockTest {
     s3.createBucket("getput").getName shouldBe "getput"
     s3.listBuckets().exists(_.getName == "getput") shouldBe true
 
-    val is = IOUtils.toInputStream("bar", Charset.forName("UTF-8"))
+    val is = new ByteArrayInputStream("bar".getBytes("UTF-8"))
     val metadata: ObjectMetadata = new ObjectMetadata()
     metadata.setContentType("application/json")
     metadata.setUserMetadata(Map("metamaic" -> "maic"))
@@ -26,15 +25,14 @@ class GetPutObjectWithMetadataTest extends S3MockTest {
     val actualMetadata: ObjectMetadata = s3Object.getObjectMetadata
     actualMetadata.getContentType shouldBe "application/json"
 
-    val result = IOUtils.toString(s3Object.getObjectContent, Charset.forName("UTF-8"))
-    result shouldBe "bar"
+    getContent(s3Object) shouldBe "bar"
   }
 
   "s3 mock" should "put object with metadata, but skip unvalid content-type" in {
     s3.createBucket("getput").getName shouldBe "getput"
     s3.listBuckets().exists(_.getName == "getput") shouldBe true
 
-    val is = IOUtils.toInputStream("bar", Charset.forName("UTF-8"))
+    val is = new ByteArrayInputStream("bar".getBytes("UTF-8"))
     val metadata: ObjectMetadata = new ObjectMetadata()
     metadata.setContentType("application")
     metadata.setUserMetadata(Map("metamaic" -> "maic"))
@@ -45,14 +43,13 @@ class GetPutObjectWithMetadataTest extends S3MockTest {
     val actualMetadata: ObjectMetadata = s3Object.getObjectMetadata
     actualMetadata.getContentType shouldBe "application/octet-stream"
 
-    val result = IOUtils.toString(s3Object.getObjectContent, Charset.forName("UTF-8"))
-    result shouldBe "bar"
+    getContent(s3Object) shouldBe "bar"
   }
   "s3 mock" should "put object in subdirs with metadata, but skip unvalid content-type" in {
     s3.createBucket("getput").getName shouldBe "getput"
     s3.listBuckets().exists(_.getName == "getput") shouldBe true
 
-    val is = IOUtils.toInputStream("bar", Charset.forName("UTF-8"))
+    val is = new ByteArrayInputStream("bar".getBytes("UTF-8"))
     val metadata: ObjectMetadata = new ObjectMetadata()
     metadata.setContentType("application")
     metadata.setUserMetadata(Map("metamaic" -> "maic"))
@@ -63,8 +60,7 @@ class GetPutObjectWithMetadataTest extends S3MockTest {
     val actualMetadata: ObjectMetadata = s3Object.getObjectMetadata
     actualMetadata.getContentType shouldBe "application/octet-stream"
 
-    val result = IOUtils.toString(s3Object.getObjectContent, Charset.forName("UTF-8"))
-    result shouldBe "bar"
+    getContent(s3Object) shouldBe "bar"
   }
 
 }

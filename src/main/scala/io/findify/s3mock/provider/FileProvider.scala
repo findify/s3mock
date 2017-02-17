@@ -29,6 +29,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   def listBucket(bucket: String, prefix: String) = {
     val prefixNoLeadingSlash = prefix.dropWhile(_ == '/')
     val bucketFile = File(s"$dir/$bucket/")
+    if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     val bucketFileString = bucketFile.toString
     val bucketFiles = bucketFile.listRecursively.filter(f => {
         val fString = f.toString.drop(bucketFileString.length).dropWhile(_ == '/')
@@ -42,11 +43,13 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   def createBucket(name:String, bucketConfig:CreateBucketConfiguration) = {
     val bucket = File(s"$dir/$name")
     if (!bucket.exists) bucket.createDirectory()
-    logger.debug(s"crating bucket $name")
+    logger.debug(s"creating bucket $name")
     CreateBucket(name)
   }
   def putObject(bucket:String, key:String, data:Array[Byte], objectMetadata: ObjectMetadata = null): Unit = {
+    val bucketFile = File(s"$dir/$bucket")
     val file = File(s"$dir/$bucket/$key")
+    if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     file.createIfNotExists(createParents = true)
     logger.debug(s"writing file for s3://$bucket/$key to $dir/$bucket/$key, bytes = ${data.length}")
     file.writeByteArray(data)(OpenOptions.default)
@@ -54,8 +57,10 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     if(objectMetadata != null) putMetaData(bucket, key, objectMetadata)
   }
   def getObject(bucket:String, key:String):Array[Byte] = {
+    val bucketFile = File(s"$dir/$bucket")
     val file = File(s"$dir/$bucket/$key")
     logger.debug(s"reading object for s://$bucket/$key")
+    if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     if (!file.exists) throw NoSuchKeyException(bucket, key)
     file.byteArray
   }
@@ -85,16 +90,22 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
 
   def putObjectMultipartStart(bucket:String, key:String):InitiateMultipartUploadResult = {
     val id = Math.abs(Random.nextLong()).toString
+    val bucketFile = File(s"$dir/$bucket")
+    if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     File(s"$dir/.mp/$bucket/$key/$id/.keep").createIfNotExists(createParents = true)
     logger.debug(s"starting multipart upload for s3://$bucket/$key")
     InitiateMultipartUploadResult(bucket, key, id)
   }
   def putObjectMultipartPart(bucket:String, key:String, partNumber:Int, uploadId:String, data:Array[Byte]) = {
+    val bucketFile = File(s"$dir/$bucket")
+    if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     val file = File(s"$dir/.mp/$bucket/$key/$uploadId/$partNumber")
     logger.debug(s"uploading multipart chunk $partNumber for s3://$bucket/$key")
     file.writeByteArray(data)(OpenOptions.default)
   }
   def putObjectMultipartComplete(bucket:String, key:String, uploadId:String, request:CompleteMultipartUpload) = {
+    val bucketFile = File(s"$dir/$bucket")
+    if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     val files = request.parts.map(part => File(s"$dir/.mp/$bucket/$key/$uploadId/${part.partNumber}"))
     val parts = files.map(f => f.byteArray)
     val file = File(s"$dir/$bucket/$key")
@@ -107,6 +118,10 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   }
 
   def copyObject(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String): CopyObjectResult = {
+    val sourceBucketFile = File(s"$dir/$sourceBucket")
+    val destBucketFile = File(s"$dir/$destBucket")
+    if (!sourceBucketFile.exists) throw NoSuchBucketException(sourceBucket)
+    if (!destBucketFile.exists) throw NoSuchBucketException(destBucket)
     val sourceFile = File(s"$dir/$sourceBucket/$sourceKey")
     val destFile = File(s"$dir/$destBucket/$destKey")
     sourceFile.copyTo(destFile, overwrite = true)
@@ -124,10 +139,10 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   }
 
   def deleteBucket(bucket:String): Unit = {
-    val file = File(s"$dir/$bucket")
+    val bucketFile = File(s"$dir/$bucket")
     logger.debug(s"deleting bucket s://$bucket")
-    if (!file.exists) throw NoSuchBucketException(bucket)
-    file.delete()
+    if (!bucketFile.exists) throw NoSuchBucketException(bucket)
+    bucketFile.delete()
   }
 
 }

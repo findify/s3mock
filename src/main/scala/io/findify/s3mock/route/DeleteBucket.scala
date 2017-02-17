@@ -3,6 +3,7 @@ package io.findify.s3mock.route
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import com.typesafe.scalalogging.LazyLogging
+import io.findify.s3mock.error.{InternalErrorException, NoSuchBucketException}
 import io.findify.s3mock.provider.Provider
 
 import scala.util.{Failure, Success, Try}
@@ -17,9 +18,17 @@ case class DeleteBucket(implicit provider:Provider) extends LazyLogging {
         case Success(_) =>
           logger.debug(s"DELETE bucket $bucket: ok")
           HttpResponse(StatusCodes.NoContent)
-        case Failure(e) =>
-          logger.error(s"DELETE bucket $bucket failed: ${e.getMessage}", e)
-          HttpResponse(StatusCodes.NotFound)
+        case Failure(e: NoSuchBucketException) =>
+          logger.error(s"DELETE bucket $bucket failed: no such bucket")
+          HttpResponse(
+            StatusCodes.NotFound,
+            entity = e.toXML.toString()
+          )
+        case Failure(t) =>
+          HttpResponse(
+            StatusCodes.InternalServerError,
+            entity = InternalErrorException(t).toXML.toString()
+          )
       }
     }
   }

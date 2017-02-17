@@ -10,7 +10,7 @@ import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
-import com.amazonaws.services.s3.model.{CompleteMultipartUploadRequest, InitiateMultipartUploadRequest, UploadPartRequest}
+import com.amazonaws.services.s3.model.{AmazonS3Exception, CompleteMultipartUploadRequest, InitiateMultipartUploadRequest, UploadPartRequest}
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.IOUtils
 
@@ -28,6 +28,7 @@ class MultipartUploadTest extends S3MockTest {
   val http = Http(system)
 
   "s3" should "upload multipart files" in {
+    s3.createBucket("getput")
     val response1 = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.POST, uri = "http://127.0.0.1:8001/getput/foo2?uploads")), 10.minutes)
     val data = Await.result(response1.entity.dataBytes.fold(ByteString(""))(_ ++ _).runWith(Sink.head), 10.seconds)
     val uploadId = (scala.xml.XML.loadString(data.utf8String) \ "UploadId").text
@@ -73,5 +74,15 @@ class MultipartUploadTest extends S3MockTest {
     DigestUtils.md5Hex(IOUtils.toByteArray(s3.getObject("getput", "fooLarge").getObjectContent)) shouldBe DigestUtils.md5Hex(blobs.map(_._1).fold(Array[Byte]())(_ ++ _))
 
     
+  }
+
+
+  it should "produce NoSuchBucket if bucket does not exist" in {
+    val exc = intercept[AmazonS3Exception] {
+      val init = s3.initiateMultipartUpload(new InitiateMultipartUploadRequest("aws-404", "foo4"))
+      val p1 = s3.uploadPart(new UploadPartRequest().withBucketName("aws-404").withPartSize(10).withKey("foo4").withPartNumber(1).withUploadId(init.getUploadId).withInputStream(new ByteArrayInputStream("hellohello".getBytes())))
+    }
+    exc.getStatusCode shouldBe 404
+    exc.getErrorCode shouldBe "NoSuchBucket"
   }
 }

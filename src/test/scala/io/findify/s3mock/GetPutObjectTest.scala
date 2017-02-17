@@ -7,7 +7,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
 import akka.stream.ActorMaterializer
-import com.amazonaws.services.s3.model.ObjectMetadata
+import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata}
 
 import scala.concurrent.duration._
 import scala.collection.JavaConversions._
@@ -51,4 +51,21 @@ class GetPutObjectTest extends S3MockTest {
     val result = IOUtils.toByteArray(s3.getObject("getput", "foolarge").getObjectContent)
     result shouldBe blob
   }
+
+  "get" should "produce NoSuchBucket if bucket does not exist" in {
+    val exc = intercept[AmazonS3Exception] {
+      s3.getObject("aws-404", "foo")
+    }
+    exc.getStatusCode shouldBe 404
+    exc.getErrorCode shouldBe "NoSuchBucket"
+  }
+
+  "put" should "produce NoSuchBucket if bucket does not exist" in {
+    val exc = intercept[AmazonS3Exception] {
+      s3.putObject("aws-404", "foo", "content")
+    }
+    exc.getStatusCode shouldBe 404
+    exc.getErrorCode shouldBe "NoSuchBucket"
+  }
+
 }

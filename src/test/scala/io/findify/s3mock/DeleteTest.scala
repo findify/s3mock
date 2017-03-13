@@ -1,6 +1,6 @@
 package io.findify.s3mock
 
-import com.amazonaws.services.s3.model.AmazonS3Exception
+import com.amazonaws.services.s3.model.{AmazonS3Exception, DeleteObjectsRequest}
 
 import scala.collection.JavaConversions._
 import scala.util.Try
@@ -37,5 +37,14 @@ class DeleteTest extends S3MockTest {
     }
     exc.getStatusCode shouldBe 404
     exc.getErrorCode shouldBe "NoSuchBucket"
+  }
+
+  it should "delete multiple objects at once" in {
+    s3.createBucket("delobj2")
+    s3.putObject("delobj2", "somefile1", "foo1")
+    s3.putObject("delobj2", "somefile2", "foo2")
+    s3.listObjects("delobj2", "somefile").getObjectSummaries.size() shouldBe 2
+    s3.deleteObjects(new DeleteObjectsRequest("delobj2").withKeys("somefile1", "somefile2"))
+    s3.listObjects("delobj2", "somefile").getObjectSummaries.size() shouldBe 0
   }
 }

@@ -38,7 +38,8 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
           concat(
             ListBucket().route(bucket),
             CreateBucket().route(bucket),
-            DeleteBucket().route(bucket)
+            DeleteBucket().route(bucket),
+            DeleteObjects().route(bucket)
           )
         } ~ pathEnd {
           concat(

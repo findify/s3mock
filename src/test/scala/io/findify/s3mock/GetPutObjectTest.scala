@@ -65,4 +65,11 @@ class GetPutObjectTest extends S3MockTest {
     exc.getErrorCode shouldBe "NoSuchBucket"
   }
 
+  it should "work with large files" in {
+    val huge = Random.nextString(10*1024*1024)
+    s3.putObject("getput", "foobig", huge)
+    val result = getContent(s3.getObject("getput", "foobig"))
+    result shouldBe huge
+  }
+
 }

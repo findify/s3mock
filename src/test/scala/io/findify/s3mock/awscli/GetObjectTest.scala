@@ -33,12 +33,21 @@ class GetObjectTest extends AWSCliTest {
     val meta = s3.getObjectMetadata("awscli-head2", "foo")
     meta.getContentLength shouldBe 3
   }
-  it should "respond with status 404" in {
-    s3.createBucket("awscli-404")
+  it should "respond with status 404 if key does not exist" in {
+    s3.createBucket("awscli")
+    val exc = intercept[AmazonS3Exception] {
+      s3.getObject("awscli", "doesnotexist")
+    }
+    exc.getStatusCode shouldBe 404
+    exc.getErrorCode shouldBe "NoSuchKey"
+  }
+
+  it should "respond with status 404 if bucket does not exist" in {
+
     val exc = intercept[AmazonS3Exception] {
       s3.getObject("awscli-404", "doesnotexist")
     }
     exc.getStatusCode shouldBe 404
-    exc.getErrorCode shouldBe "NoSuchKey"
+    exc.getErrorCode shouldBe "NoSuchBucket"
   }
 }

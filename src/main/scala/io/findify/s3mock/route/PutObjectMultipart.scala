@@ -7,9 +7,11 @@ import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.S3ChunkedProtocolStage
+import io.findify.s3mock.error.{InternalErrorException, NoSuchBucketException}
 import io.findify.s3mock.provider.Provider
 
 import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 /**
   * Created by shutty on 8/19/16.
@@ -32,8 +34,19 @@ case class PutObjectMultipart(implicit provider:Provider, mat:Materializer) exte
       val result = request.entity.dataBytes
         .fold(ByteString(""))(_ ++ _)
         .map(data => {
-          provider.putObjectMultipartPart(bucket, path, partNumber.toInt, uploadId, data.toArray)
-          HttpResponse(StatusCodes.OK)
+          Try(provider.putObjectMultipartPart(bucket, path, partNumber.toInt, uploadId, data.toArray)) match {
+            case Success(()) => HttpResponse(StatusCodes.OK)
+            case Failure(e: NoSuchBucketException) =>
+              HttpResponse(
+                StatusCodes.NotFound,
+                entity = e.toXML.toString()
+              )
+            case Failure(t) =>
+              HttpResponse(
+                StatusCodes.InternalServerError,
+                entity = InternalErrorException(t).toXML.toString()
+              )
+          }
         }).runWith(Sink.head[HttpResponse])
       result
     }
@@ -45,8 +58,19 @@ case class PutObjectMultipart(implicit provider:Provider, mat:Materializer) exte
         .via(new S3ChunkedProtocolStage)
         .fold(ByteString(""))(_ ++ _)
         .map(data => {
-          provider.putObjectMultipartPart(bucket, path, partNumber.toInt, uploadId, data.toArray)
-          HttpResponse(StatusCodes.OK)
+          Try( provider.putObjectMultipartPart(bucket, path, partNumber.toInt, uploadId, data.toArray)) match {
+            case Success(()) => HttpResponse(StatusCodes.OK)
+            case Failure(e: NoSuchBucketException) =>
+              HttpResponse(
+                StatusCodes.NotFound,
+                entity = e.toXML.toString()
+              )
+            case Failure(t) =>
+              HttpResponse(
+                StatusCodes.InternalServerError,
+                entity = InternalErrorException(t).toXML.toString()
+              )
+          }
         }).runWith(Sink.head[HttpResponse])
       result
     }

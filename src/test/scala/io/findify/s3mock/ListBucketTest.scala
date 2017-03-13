@@ -2,7 +2,7 @@ package io.findify.s3mock
 
 import java.util
 
-import com.amazonaws.services.s3.model.S3ObjectSummary
+import com.amazonaws.services.s3.model.{AmazonS3Exception, S3ObjectSummary}
 
 import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
@@ -55,5 +55,13 @@ class ListBucketTest extends S3MockTest {
 
     val returnedKey = summaries.last.getKey
     s3.getObject("list4", returnedKey).getKey shouldBe "one"
+  }
+
+ it should "produce NoSuchBucket if bucket does not exist" in {
+    val exc = intercept[AmazonS3Exception] {
+      s3.listObjects("aws-404", "qaz/qax")
+    }
+    exc.getStatusCode shouldBe 404
+    exc.getErrorCode shouldBe "NoSuchBucket"
   }
 }

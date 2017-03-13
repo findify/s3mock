@@ -3,11 +3,8 @@ package io.findify.s3mock.route
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import com.typesafe.scalalogging.LazyLogging
-import io.findify.s3mock.error.NoSuchKeyException
+import io.findify.s3mock.error.{InternalErrorException, NoSuchBucketException, NoSuchKeyException}
 import io.findify.s3mock.provider.Provider
-import io.findify.s3mock.response.CopyObjectResult
-import org.joda.time.DateTime
-
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -29,12 +26,24 @@ case class CopyObject(implicit provider: Provider) extends LazyLogging {
               case Success(result) =>
                 logger.info(s"copied object $sourceBucket/$sourceKey")
                 HttpResponse(status = StatusCodes.OK, entity = result.toXML.toString())
-              case Failure(NoSuchKeyException(_, _)) =>
+              case Failure(e: NoSuchKeyException) =>
                 logger.info(s"cannot copy object $sourceBucket/$sourceKey: no such key")
-                HttpResponse(StatusCodes.NotFound)
-              case Failure(ex) =>
-                logger.error(s"cannot copy object $sourceBucket/$sourceKey: $ex", ex)
-                HttpResponse(StatusCodes.NotFound)
+                HttpResponse(
+                  StatusCodes.NotFound,
+                  entity = e.toXML.toString()
+                )
+              case Failure(e: NoSuchBucketException) =>
+                logger.info(s"cannot copy object $sourceBucket/$sourceKey: no such bucket")
+                HttpResponse(
+                  StatusCodes.NotFound,
+                  entity = e.toXML.toString()
+                )
+              case Failure(t) =>
+                logger.error(s"cannot copy object $sourceBucket/$sourceKey: $t", t)
+                HttpResponse(
+                  StatusCodes.InternalServerError,
+                  entity = InternalErrorException(t).toXML.toString()
+                )
             }
           case None =>
             logger.error(s"cannot copy object $source")

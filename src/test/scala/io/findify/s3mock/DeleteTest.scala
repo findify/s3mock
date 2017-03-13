@@ -1,5 +1,7 @@
 package io.findify.s3mock
 
+import com.amazonaws.services.s3.model.AmazonS3Exception
+
 import scala.collection.JavaConversions._
 import scala.util.Try
 
@@ -13,6 +15,7 @@ class DeleteTest extends S3MockTest {
     s3.deleteBucket("del")
     s3.listBuckets().exists(_.getName == "del") shouldBe false
   }
+
   it should "return 404 for non existent buckets" in {
     Try(s3.deleteBucket("nodel")).isFailure shouldBe true
   }
@@ -23,7 +26,16 @@ class DeleteTest extends S3MockTest {
     s3.deleteObject("delobj", "somefile")
     s3.listObjects("delobj", "somefile").getObjectSummaries.exists(_.getKey == "somefile") shouldBe false
   }
+
   it should "return 404 for non-existent keys" in {
     Try(s3.deleteObject("nodel", "xxx")).isFailure shouldBe true
+  }
+
+  it should "produce NoSuchBucket if bucket does not exist" in {
+    val exc = intercept[AmazonS3Exception] {
+      s3.deleteBucket("aws-404")
+    }
+    exc.getStatusCode shouldBe 404
+    exc.getErrorCode shouldBe "NoSuchBucket"
   }
 }

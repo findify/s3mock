@@ -16,9 +16,11 @@ import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.util.{DateUtils, StringUtils}
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.S3ChunkedProtocolStage
+import io.findify.s3mock.error.{InternalErrorException, NoSuchBucketException}
 import io.findify.s3mock.provider.Provider
 
 import scala.collection.JavaConverters._
+import scala.util.{Failure, Success, Try}
 
 /**
   * Created by shutty on 8/20/16.
@@ -46,8 +48,19 @@ case class PutObject(implicit provider:Provider, mat:Materializer) extends LazyL
         .via(new S3ChunkedProtocolStage)
         .fold(ByteString(""))(_ ++ _)
         .map(data => {
-          provider.putObject(bucket, path, data.toArray, metadata)
-          HttpResponse(StatusCodes.OK)
+          Try(provider.putObject(bucket, path, data.toArray, metadata)) match {
+            case Success(()) => HttpResponse(StatusCodes.OK)
+            case Failure(e: NoSuchBucketException) =>
+              HttpResponse(
+                StatusCodes.NotFound,
+                entity = e.toXML.toString()
+              )
+            case Failure(t) =>
+              HttpResponse(
+                StatusCodes.InternalServerError,
+                entity = InternalErrorException(t).toXML.toString()
+              )
+          }
         }).runWith(Sink.head[HttpResponse])
       result
     }
@@ -62,8 +75,19 @@ case class PutObject(implicit provider:Provider, mat:Materializer) extends LazyL
       val result = request.entity.dataBytes
         .fold(ByteString(""))(_ ++ _)
         .map(data => {
-          provider.putObject(bucket, path, data.toArray, metadata)
-          HttpResponse(StatusCodes.OK)
+          Try(provider.putObject(bucket, path, data.toArray, metadata)) match {
+            case Success(()) => HttpResponse(StatusCodes.OK)
+            case Failure(e: NoSuchBucketException) =>
+              HttpResponse(
+                StatusCodes.NotFound,
+                entity = e.toXML.toString()
+              )
+            case Failure(t) =>
+              HttpResponse(
+                StatusCodes.InternalServerError,
+                entity = InternalErrorException(t).toXML.toString()
+              )
+          }
         }).runWith(Sink.head[HttpResponse])
       result
     }

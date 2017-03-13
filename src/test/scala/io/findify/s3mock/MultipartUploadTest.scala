@@ -2,7 +2,6 @@ package io.findify.s3mock
 
 import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
-import java.util
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -12,7 +11,6 @@ import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import com.amazonaws.services.s3.model.{AmazonS3Exception, CompleteMultipartUploadRequest, InitiateMultipartUploadRequest, UploadPartRequest}
 import org.apache.commons.codec.digest.DigestUtils
-import org.apache.commons.io.IOUtils
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
@@ -49,7 +47,7 @@ class MultipartUploadTest extends S3MockTest {
     val response4 = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.POST, uri = s"http://127.0.0.1:8001/getput/foo2?uploadId=$uploadId", entity = commit)), 10.minutes)
     response4.status.intValue() shouldBe 200
 
-    IOUtils.toString(s3.getObject("getput", "foo2").getObjectContent, Charset.forName("UTF-8")) shouldBe "fooboo"
+    getContent(s3.getObject("getput", "foo2")) shouldBe "fooboo"
   }
 
   it should "work with java sdk" in {
@@ -59,19 +57,19 @@ class MultipartUploadTest extends S3MockTest {
     val p2 = s3.uploadPart(new UploadPartRequest().withBucketName("getput").withPartSize(10).withKey("foo4").withPartNumber(2).withUploadId(init.getUploadId).withInputStream(new ByteArrayInputStream("worldworld".getBytes())))
     val result = s3.completeMultipartUpload(new CompleteMultipartUploadRequest("getput", "foo4", init.getUploadId, List(p1.getPartETag, p2.getPartETag).asJava))
     result.getKey shouldBe "foo4"
-    IOUtils.toString(s3.getObject("getput", "foo4").getObjectContent, Charset.forName("UTF-8")) shouldBe "hellohelloworldworld"
+    getContent(s3.getObject("getput", "foo4")) shouldBe "hellohelloworldworld"
   }
   it should "work with large blobs" in {
     val init = s3.initiateMultipartUpload(new InitiateMultipartUploadRequest("getput", "fooLarge"))
     val blobs = for ( i <- 0 to 200) yield {
-      var blob1 = new Array[Byte](10000)
+      val blob1 = new Array[Byte](10000)
       Random.nextBytes(blob1)
       val p1 = s3.uploadPart(new UploadPartRequest().withBucketName("getput").withPartSize(blob1.length).withKey("fooLarge").withPartNumber(i).withUploadId(init.getUploadId).withInputStream(new ByteArrayInputStream(blob1)))
       blob1 -> p1.getPartETag
     }
     val result = s3.completeMultipartUpload(new CompleteMultipartUploadRequest("getput", "fooLarge", init.getUploadId, blobs.map(_._2).asJava))
     result.getKey shouldBe "fooLarge"
-    DigestUtils.md5Hex(IOUtils.toByteArray(s3.getObject("getput", "fooLarge").getObjectContent)) shouldBe DigestUtils.md5Hex(blobs.map(_._1).fold(Array[Byte]())(_ ++ _))
+    DigestUtils.md5Hex(s3.getObject("getput", "fooLarge").getObjectContent) shouldBe DigestUtils.md5Hex(blobs.map(_._1).fold(Array[Byte]())(_ ++ _))
 
     
   }

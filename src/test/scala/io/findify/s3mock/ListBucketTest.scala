@@ -2,7 +2,7 @@ package io.findify.s3mock
 
 import java.util
 
-import com.amazonaws.services.s3.model.{AmazonS3Exception, S3ObjectSummary}
+import com.amazonaws.services.s3.model.{AmazonS3Exception, ListObjectsRequest, S3ObjectSummary}
 
 import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
@@ -63,5 +63,17 @@ class ListBucketTest extends S3MockTest {
     }
     exc.getStatusCode shouldBe 404
     exc.getErrorCode shouldBe "NoSuchBucket"
+  }
+
+  it should "obey delimiters && prefixes" in {
+    s3.createBucket("list5")
+    s3.putObject("list5", "f/one-x", "xxx")
+    s3.putObject("list5", "f/one-y", "yyy")
+    val req = new ListObjectsRequest()
+    req.setBucketName("list5")
+    req.setPrefix("f/")
+    req.setDelimiter("/")
+    val summaries  = s3.listObjects("list5").getObjectSummaries.map(_.getKey).toList
+    summaries.size() shouldBe 2
   }
 }

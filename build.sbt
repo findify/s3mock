@@ -19,7 +19,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
   "com.amazonaws" % "aws-java-sdk-s3" % "1.11.104",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-  "ch.qos.logback" % "logback-classic" % "1.2.1" % "test"
+  "ch.qos.logback" % "logback-classic" % "1.2.1" % "test",
+  "org.iq80.leveldb" % "leveldb" % "0.9"
 )
 
 licenses += ("MIT", url("https://opensource.org/licenses/MIT"))

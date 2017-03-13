@@ -8,6 +8,7 @@ import better.files.File.OpenOptions
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.{NoSuchBucketException, NoSuchKeyException}
+import io.findify.s3mock.provider.metadata.{MapMetadataStore, MetadataStore}
 import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
 import io.findify.s3mock.response._
 
@@ -17,6 +18,7 @@ import scala.util.Random
   * Created by shutty on 8/9/16.
   */
 class FileProvider(dir:String) extends Provider with LazyLogging {
+  val metadataStore: MetadataStore = new MapMetadataStore(dir)
   val workDir = File(dir)
   if (!workDir.exists) workDir.createDirectories()
 
@@ -66,26 +68,11 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   }
 
   def getMetaData(bucket:String, key:String): Option[ObjectMetadata] = {
-    val split = key.split("/").toBuffer
-    val metaFileName = split.dropRight(1)
-    metaFileName.append(s".${split.last}")
-
-    val file = File(s"$dir/$bucket/${metaFileName.mkString}")
-    logger.debug(s"reading object for s://$bucket/${metaFileName.mkString}")
-    if (!file.exists) None else Some(new ObjectInputStream(file.newInputStream).readObject().asInstanceOf[ObjectMetadata])
+    metadataStore.get(bucket, key)
   }
 
   def putMetaData(bucket:String, key:String, meta: ObjectMetadata) = {
-    val split = key.split("/").toBuffer
-    val metaFileName = split.dropRight(1)
-    metaFileName.append(s".${split.last}")
-
-    val metaDataFile = File(s"$dir/$bucket/${metaFileName.mkString}")
-
-    val stream: ObjectOutputStream = new ObjectOutputStream(metaDataFile.newOutputStream(OpenOptions.default))
-    stream.writeObject(meta)
-    stream.flush()
-    stream.close()
+    metadataStore.put(bucket, key, meta)
   }
 
   def putObjectMultipartStart(bucket:String, key:String):InitiateMultipartUploadResult = {

@@ -1,12 +1,13 @@
 package io.findify.s3mock
 
 import java.io.ByteArrayInputStream
+import java.util
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
 import akka.stream.ActorMaterializer
-import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata}
+import com.amazonaws.services.s3.model._
 
 import scala.concurrent.duration._
 import scala.collection.JavaConversions._
@@ -47,6 +48,27 @@ class GetPutObjectTest extends S3MockTest {
     s3.putObject("getput", "foolarge", new ByteArrayInputStream(blob), new ObjectMetadata())
     val result = getContent(s3.getObject("getput", "foolarge")).getBytes("UTF-8")
     result shouldBe blob
+  }
+
+  "tagging" should "store tags and spit them back on get tagging requests" in {
+    s3.createBucket("tbucket")
+    s3.putObject(
+      new PutObjectRequest("tbucket", "taggedobj", new ByteArrayInputStream("content".getBytes("UTF-8")), new ObjectMetadata)
+        .withTagging(new ObjectTagging(List(new Tag("key1", "val1"), new Tag("key=&interesting", "value=something&stragne"))))
+    )
+    var tagging = s3.getObjectTagging(new GetObjectTaggingRequest("tbucket", "taggedobj")).getTagSet
+    var tagMap = new util.HashMap[String, String]()
+    for (tag <- tagging){
+      tagMap.put(tag.getKey, tag.getValue)
+    }
+    tagMap.size() shouldBe 2
+    tagMap.get("key1") shouldBe "val1"
+    tagMap.get("key=&interesting") shouldBe "value=something&stragne"
+  }
+  it should "be OK with retrieving tags for un-tagged objects" in {
+    s3.putObject("tbucket", "taggedobj", "some-content")
+    var tagging = s3.getObjectTagging(new GetObjectTaggingRequest("tbucket", "taggedobj")).getTagSet
+    tagging.size() shouldBe 0
   }
 
   "get" should "produce NoSuchBucket if bucket does not exist" in {

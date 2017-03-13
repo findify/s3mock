@@ -124,6 +124,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     if (!destBucketFile.exists) throw NoSuchBucketException(destBucket)
     val sourceFile = File(s"$dir/$sourceBucket/$sourceKey")
     val destFile = File(s"$dir/$destBucket/$destKey")
+    destFile.createIfNotExists(createParents = true)
     sourceFile.copyTo(destFile, overwrite = true)
     logger.debug(s"Copied s3://$sourceBucket/$sourceKey to s3://$destBucket/$destKey")
     val sourceMeta = getMetaData(sourceBucket, sourceKey)

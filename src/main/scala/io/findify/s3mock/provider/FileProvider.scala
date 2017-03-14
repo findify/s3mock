@@ -109,7 +109,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     CompleteMultipartUploadResult(bucket, key, file.md5)
   }
 
-  override def copyObject(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String): CopyObjectResult = {
+  override def copyObject(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String, newMeta: Option[ObjectMetadata] = None): CopyObjectResult = {
     val sourceBucketFile = File(s"$dir/$sourceBucket")
     val destBucketFile = File(s"$dir/$destBucket")
     if (!sourceBucketFile.exists) throw NoSuchBucketException(sourceBucket)
@@ -119,7 +119,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     destFile.createIfNotExists(createParents = true)
     sourceFile.copyTo(destFile, overwrite = true)
     logger.debug(s"Copied s3://$sourceBucket/$sourceKey to s3://$destBucket/$destKey")
-    val sourceMeta = metadataStore.get(sourceBucket, sourceKey)
+    val sourceMeta = newMeta.orElse(metadataStore.get(sourceBucket, sourceKey))
     sourceMeta.foreach(meta => metadataStore.put(destBucket, destKey, meta))
     CopyObjectResult(DateTime(sourceFile.lastModifiedTime.toEpochMilli), destFile.md5)
   }

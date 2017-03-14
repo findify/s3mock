@@ -1,9 +1,10 @@
 package io.findify.s3mock
 
 import java.io.ByteArrayInputStream
+import java.nio.charset.StandardCharsets
 import java.util
 
-import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest}
+import com.amazonaws.services.s3.model.{CopyObjectRequest, ObjectMetadata, PutObjectRequest}
 
 /**
   * Created by shutty on 3/13/17.
@@ -17,7 +18,7 @@ class CopyObjectTest extends S3MockTest {
     getContent(s3.getObject("bucket-2", "folder/test.txt")) shouldBe "contents"
   }
 
-  it should "bne copied with metadata" in {
+  it should "be copied with metadata" in {
     s3.createBucket("bucket-3")
     val meta = new ObjectMetadata()
     val user = new util.HashMap[String,String]()
@@ -28,5 +29,26 @@ class CopyObjectTest extends S3MockTest {
     s3.copyObject("bucket-3", "test.txt", "bucket-3", "test2.txt")
     val obj = s3.getObject("bucket-3", "test2.txt")
     obj.getObjectMetadata.getUserMetadata.get("a") shouldBe "b"
+  }
+
+  it should "be copied with new metadata" in {
+    s3.createBucket("test-bucket")
+
+    val meta = new ObjectMetadata
+    meta.addUserMetadata("key1", "value1")
+    meta.addUserMetadata("key2", "value2")
+    val putRequest = new PutObjectRequest("test-bucket", "test.txt", new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8)), meta)
+    s3.putObject(putRequest)
+
+    val newMeta = new ObjectMetadata
+    newMeta.addUserMetadata("new-key1", "new-value1")
+    newMeta.addUserMetadata("new-key2", "new-value2")
+    val copyRequest = new CopyObjectRequest("test-bucket", "test.txt", "test-bucket", "test2.txt").withNewObjectMetadata(newMeta)
+    s3.copyObject(copyRequest)
+
+    val obj = s3.getObject("test-bucket", "test2.txt")
+    obj.getObjectMetadata.getUserMetadata.size shouldBe 2
+    obj.getObjectMetadata.getUserMetadata.get("new-key1") shouldBe "new-value1"
+    obj.getObjectMetadata.getUserMetadata.get("new-key2") shouldBe "new-value2"
   }
 }

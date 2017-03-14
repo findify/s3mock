@@ -96,4 +96,19 @@ class ListBucketTest extends S3MockTest {
     list2.getCommonPrefixes.asScala.toList shouldBe List("photos/2006/February/", "photos/2006/January/")
     summaries2 shouldBe List("photos/2006/")
   }
+
+  it should "obey delimiters && prefixes v3" in {
+    s3.createBucket("list5")
+    s3.putObject("list5", "dev/someEvent/2017/03/13/00/_SUCCESS", "xxx")
+    s3.putObject("list5", "dev/someEvent/2017/03/13/01/_SUCCESS", "yyy")
+    s3.putObject("list5", "dev/someEvent/2016/12/31/23/_SUCCESS", "zzz")
+    val req2 = new ListObjectsRequest()
+    req2.setBucketName("list5")
+    req2.setDelimiter("/")
+    req2.setPrefix("dev/")
+    val list2  = s3.listObjects(req2)
+    val summaries2 = list2.getObjectSummaries.map(_.getKey).toList
+    list2.getCommonPrefixes.asScala.toList shouldBe List("dev/someEvent/")
+    summaries2 shouldBe List("dev/")
+  }
 }

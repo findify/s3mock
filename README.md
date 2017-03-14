@@ -26,7 +26,7 @@ s3mock package is available for Scala 2.11/2.12 (on Java 8). To install using SB
  statements to your `build.sbt`:
 
     resolvers += Resolver.bintrayRepo("findify", "maven")
-    libraryDependencies += "io.findify" %% "s3mock" % "0.1.7" % "test",
+    libraryDependencies += "io.findify" %% "s3mock" % "0.1.8" % "test",
 
 On maven, update your `pom.xml` in the following way:
 ```xml
@@ -40,7 +40,7 @@ On maven, update your `pom.xml` in the following way:
     <dependency>
         <groupId>io.findify</groupId>
         <artifactId>s3mock_2.12</artifactId>
-        <version>0.1.7</version>
+        <version>0.1.8</version>
         <type>pom</type>
         <scope>test</scope>
     </dependency>

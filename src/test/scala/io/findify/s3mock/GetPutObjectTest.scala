@@ -94,4 +94,13 @@ class GetPutObjectTest extends S3MockTest {
     result shouldBe huge
   }
 
+  it should "work with dot-files" in {
+    s3.createBucket("dot")
+    s3.listBuckets().exists(_.getName == "dot") shouldBe true
+    s3.putObject("dot", "foo", "bar")
+    s3.putObject("dot", ".foo", "bar")
+    val result = s3.listObjects("dot").getObjectSummaries.toList.map(_.getKey)
+    result shouldBe List(".foo", "foo")
+  }
+
 }

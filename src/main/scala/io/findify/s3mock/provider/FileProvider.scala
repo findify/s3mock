@@ -29,18 +29,30 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     ListAllMyBuckets("root", UUID.randomUUID().toString, buckets)
   }
 
-  override def listBucket(bucket: String, prefix: String) = {
-    val prefixNoLeadingSlash = prefix.dropWhile(_ == '/')
+  override def listBucket(bucket: String, prefix: Option[String], delimiter: Option[String]) = {
+    def commonPrefix(dir: String, p: String, d: String): Option[String] = {
+      dir.indexOf(d, p.length) match {
+        case -1 => None
+        case pos => Some(p + dir.substring(p.length, pos) + d)
+      }
+    }
+    val prefixNoLeadingSlash = prefix.getOrElse("").dropWhile(_ == '/')
     val bucketFile = File(s"$dir/$bucket/")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     val bucketFileString = bucketFile.toString
     val bucketFiles = bucketFile.listRecursively.filter(f => {
         val fString = f.toString.drop(bucketFileString.length).dropWhile(_ == '/')
-        fString.startsWith(prefixNoLeadingSlash) && !fString.startsWith(".") && !f.isDirectory
+        fString.startsWith(prefixNoLeadingSlash) && !f.isDirectory
       })
-    val files = bucketFiles.map(f => {Content(f.toString.drop(bucketFileString.length+1).dropWhile(_ == '/'), DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD")})
+    val files = bucketFiles.map(f => {Content(f.toString.drop(bucketFileString.length+1).dropWhile(_ == '/'), DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD")}).toList
     logger.debug(s"listing bucket contents: ${files.map(_.key)}")
-    ListBucket(bucket, prefix, files.toList)
+    val commonPrefixes = delimiter match {
+      case Some(del) => files.flatMap(f => commonPrefix(f.key, prefixNoLeadingSlash, del)).distinct
+      case None => Nil
+    }
+    val filteredFiles = files.filterNot(f => commonPrefixes.exists(p => f.key.startsWith(p)))
+    val prefixFile = if (prefix.isDefined && delimiter.isDefined) prefix.map(p => Content(p, DateTime.now, "0", 0, "STANDART")).toList else Nil
+    ListBucket(bucket, prefix, delimiter, commonPrefixes, filteredFiles ++ prefixFile)
   }
 
   override def createBucket(name:String, bucketConfig:CreateBucketConfiguration) = {

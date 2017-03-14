@@ -65,15 +65,35 @@ class ListBucketTest extends S3MockTest {
     exc.getErrorCode shouldBe "NoSuchBucket"
   }
 
-  it should "obey delimiters && prefixes" in {
+  it should "obey delimiters && prefixes v1" in {
     s3.createBucket("list5")
-    s3.putObject("list5", "f/one-x", "xxx")
-    s3.putObject("list5", "f/one-y", "yyy")
-    val req = new ListObjectsRequest()
-    req.setBucketName("list5")
-    req.setPrefix("f/")
-    req.setDelimiter("/")
-    val summaries  = s3.listObjects("list5").getObjectSummaries.map(_.getKey).toList
-    summaries.size() shouldBe 2
+    s3.putObject("list5", "sample.jpg", "xxx")
+    s3.putObject("list5", "photos/2006/January/sample.jpg", "yyy")
+    s3.putObject("list5", "photos/2006/February/sample2.jpg", "zzz")
+    s3.putObject("list5", "photos/2006/February/sample3.jpg", "zzz")
+    s3.putObject("list5", "photos/2006/February/sample4.jpg", "zzz")
+    val req1 = new ListObjectsRequest()
+    req1.setBucketName("list5")
+    req1.setDelimiter("/")
+    val list1  = s3.listObjects(req1)
+    val summaries1 = list1.getObjectSummaries.map(_.getKey).toList
+    list1.getCommonPrefixes.asScala.toList shouldBe List("photos/")
+    summaries1 shouldBe List("sample.jpg")
+  }
+  it should "obey delimiters && prefixes v2" in {
+    s3.createBucket("list5")
+    s3.putObject("list5", "sample.jpg", "xxx")
+    s3.putObject("list5", "photos/2006/January/sample.jpg", "yyy")
+    s3.putObject("list5", "photos/2006/February/sample2.jpg", "zzz")
+    s3.putObject("list5", "photos/2006/February/sample3.jpg", "zzz")
+    s3.putObject("list5", "photos/2006/February/sample4.jpg", "zzz")
+    val req2 = new ListObjectsRequest()
+    req2.setBucketName("list5")
+    req2.setDelimiter("/")
+    req2.setPrefix("photos/2006/")
+    val list2  = s3.listObjects(req2)
+    val summaries2 = list2.getObjectSummaries.map(_.getKey).toList
+    list2.getCommonPrefixes.asScala.toList shouldBe List("photos/2006/February/", "photos/2006/January/")
+    summaries2 shouldBe List("photos/2006/")
   }
 }

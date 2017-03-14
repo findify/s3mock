@@ -25,6 +25,35 @@ libraryDependencies ++= Seq(
 
 licenses += ("MIT", url("https://opensource.org/licenses/MIT"))
 
-bintrayOrganization := Some("findify")
-
 parallelExecution in Test := false
+
+publishMavenStyle := true
+
+publishTo := {
+  val nexus = "https://oss.sonatype.org/"
+  if (isSnapshot.value)
+    Some("snapshots" at nexus + "content/repositories/snapshots")
+  else
+    Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+}
+
+pomExtra :=
+  <url>https://github.com/findify/s3mock</url>
+    <licenses>
+      <license>
+        <name>MIT</name>
+        <url>https://opensource.org/licenses/MIT</url>
+        <distribution>repo</distribution>
+      </license>
+    </licenses>
+    <scm>
+      <url>git@github.com:findify/s3mock.git</url>
+      <connection>scm:git:git@github.com:findify/s3mock.git</connection>
+    </scm>
+    <developers>
+      <developer>
+        <id>romangrebennikov</id>
+        <name>Roman Grebennikov</name>
+        <url>http://www.dfdx.me</url>
+      </developer>
+    </developers>

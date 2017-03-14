@@ -1,5 +1,8 @@
 package io.findify.s3mock.route
 
+import java.io.StringWriter
+import java.net.URLDecoder
+
 import akka.http.scaladsl.model.HttpEntity.Strict
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.{RawHeader, `Last-Modified`}
@@ -18,7 +21,7 @@ import scala.util.{Failure, Success, Try}
   * Created by shutty on 8/19/16.
   */
 case class GetObject(implicit provider: Provider) extends LazyLogging {
-  def route(bucket: String, path: String) = get {
+  def route(bucket: String, path: String, params: Map[String, String]) = get {
     complete {
       logger.debug(s"get object: bucket=$bucket, path=$path")
 
@@ -31,11 +34,16 @@ case class GetObject(implicit provider: Provider) extends LazyLogging {
                 case Left(error) => HttpEntity(data)
               }
 
-              HttpResponse(
-                status = StatusCodes.OK,
-                entity = entity,
-                headers = `Last-Modified`(DateTime(1970, 1, 1)) :: metadataToHeaderList(meta)
-              )
+              if (params.contains("tagging")){
+                handleTaggingRequest(meta)
+              } else {
+                HttpResponse(
+                  status = StatusCodes.OK,
+                  entity = entity,
+                  headers = `Last-Modified`(DateTime(1970, 1, 1)) :: metadataToHeaderList(meta)
+                )
+              }
+
             case None =>
               HttpResponse(
                 status = StatusCodes.OK,
@@ -60,6 +68,49 @@ case class GetObject(implicit provider: Provider) extends LazyLogging {
           )
       }
     }
+  }
+
+
+
+  protected def handleTaggingRequest(meta: ObjectMetadata): HttpResponse = {
+    var root = <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"></Tagging>
+    var tagset = <TagSet></TagSet>
+
+    var w = new StringWriter()
+
+    if (meta.getRawMetadata.containsKey("x-amz-tagging")){
+      var doc =
+        <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+          <TagSet>
+            {
+            meta.getRawMetadata.get("x-amz-tagging").asInstanceOf[String].split("&").map(
+              (rawTag: String) => {
+                rawTag.split("=", 2).map(
+                  (part: String) => URLDecoder.decode(part, "UTF-8")
+                )
+              }).map(
+              (kv: Array[String]) =>
+                <Tag>
+                  <Key>{kv(0)}</Key>
+                  <Value>{kv(1)}</Value>
+                </Tag>)
+            }
+          </TagSet>
+        </Tagging>
+
+
+      xml.XML.write(w, doc, "UTF-8", true, null)
+    } else {
+      var doc = <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet></TagSet></Tagging>
+      xml.XML.write(w, doc, "UTF-8", true, null)
+    }
+
+    meta.setContentType("application/xml; charset=utf-8")
+    HttpResponse(
+      status = StatusCodes.OK,
+      entity = w.toString,
+      headers = `Last-Modified`(DateTime(1970, 1, 1)) :: metadataToHeaderList(meta)
+    )
   }
 
   protected def metadataToHeaderList(metadata: ObjectMetadata): List[RawHeader] = {

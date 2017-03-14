@@ -47,16 +47,18 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
             CreateBucket().route(bucket),
             DeleteBucket().route(bucket)
           )
-        } ~ path(RemainingPath) { key =>
-          concat(
-            GetObject().route(bucket, key.toString()),
-            CopyObject().route(bucket, key.toString()),
-            PutObjectMultipart().route(bucket, key.toString()),
-            PutObjectMultipartStart().route(bucket, key.toString()),
-            PutObjectMultipartComplete().route(bucket, key.toString()),
-            PutObject().route(bucket, key.toString()),
-            DeleteObject().route(bucket, key.toString())
-          )
+        } ~ parameterMap { params =>
+          path(RemainingPath) { key =>
+            concat(
+              GetObject().route(bucket, key.toString(), params),
+              CopyObject().route(bucket, key.toString()),
+              PutObjectMultipart().route(bucket, key.toString()),
+              PutObjectMultipartStart().route(bucket, key.toString()),
+              PutObjectMultipartComplete().route(bucket, key.toString()),
+              PutObject().route(bucket, key.toString()),
+              DeleteObject().route(bucket, key.toString())
+            )
+          }
         }
       } ~ ListBuckets().route() ~ extractRequest { request =>
         complete {

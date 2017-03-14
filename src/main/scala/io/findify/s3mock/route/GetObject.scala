@@ -12,7 +12,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.util.DateUtils
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.{InternalErrorException, NoSuchBucketException, NoSuchKeyException}
-import io.findify.s3mock.provider.Provider
+import io.findify.s3mock.provider.{GetObjectData, Provider}
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
@@ -26,8 +26,8 @@ case class GetObject(implicit provider: Provider) extends LazyLogging {
       logger.debug(s"get object: bucket=$bucket, path=$path")
 
       Try(provider.getObject(bucket, path)) match {
-        case Success(data) =>
-          provider.getMetaData(bucket, path) match {
+        case Success(GetObjectData(data, metaOption)) =>
+          metaOption match {
             case Some(meta) =>
               val entity: Strict = ContentType.parse(meta.getContentType) match {
                 case Right(value) => HttpEntity(value, data)

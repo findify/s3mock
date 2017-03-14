@@ -18,17 +18,18 @@ import scala.util.Random
   * Created by shutty on 8/9/16.
   */
 class FileProvider(dir:String) extends Provider with LazyLogging {
-  val metadataStore: MetadataStore = new MapMetadataStore(dir)
   val workDir = File(dir)
   if (!workDir.exists) workDir.createDirectories()
 
-  def listBuckets: ListAllMyBuckets = {
+  override def metadataStore: MetadataStore = new MapMetadataStore(dir)
+
+  override def listBuckets: ListAllMyBuckets = {
     val buckets = File(dir).list.map(f => Bucket(f.name, DateTime(f.lastModifiedTime.toEpochMilli))).toList
     logger.debug(s"listing buckets: ${buckets.map(_.name)}")
     ListAllMyBuckets("root", UUID.randomUUID().toString, buckets)
   }
 
-  def listBucket(bucket: String, prefix: String) = {
+  override def listBucket(bucket: String, prefix: String) = {
     val prefixNoLeadingSlash = prefix.dropWhile(_ == '/')
     val bucketFile = File(s"$dir/$bucket/")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
@@ -42,40 +43,32 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     ListBucket(bucket, prefix, files.toList)
   }
 
-  def createBucket(name:String, bucketConfig:CreateBucketConfiguration) = {
+  override def createBucket(name:String, bucketConfig:CreateBucketConfiguration) = {
     val bucket = File(s"$dir/$name")
     if (!bucket.exists) bucket.createDirectory()
     logger.debug(s"creating bucket $name")
     CreateBucket(name)
   }
-  def putObject(bucket:String, key:String, data:Array[Byte], objectMetadata: ObjectMetadata = null): Unit = {
+  override def putObject(bucket:String, key:String, data:Array[Byte], objectMetadata: Option[ObjectMetadata] = None): Unit = {
     val bucketFile = File(s"$dir/$bucket")
     val file = File(s"$dir/$bucket/$key")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     file.createIfNotExists(createParents = true)
     logger.debug(s"writing file for s3://$bucket/$key to $dir/$bucket/$key, bytes = ${data.length}")
     file.writeByteArray(data)(OpenOptions.default)
-
-    if(objectMetadata != null) putMetaData(bucket, key, objectMetadata)
+    objectMetadata.foreach(meta => metadataStore.put(bucket, key, meta))
   }
-  def getObject(bucket:String, key:String):Array[Byte] = {
+  override def getObject(bucket:String, key:String): GetObjectData = {
     val bucketFile = File(s"$dir/$bucket")
     val file = File(s"$dir/$bucket/$key")
     logger.debug(s"reading object for s://$bucket/$key")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     if (!file.exists) throw NoSuchKeyException(bucket, key)
-    file.byteArray
+    val meta = metadataStore.get(bucket, key)
+    GetObjectData(file.byteArray, meta)
   }
 
-  def getMetaData(bucket:String, key:String): Option[ObjectMetadata] = {
-    metadataStore.get(bucket, key)
-  }
-
-  def putMetaData(bucket:String, key:String, meta: ObjectMetadata) = {
-    metadataStore.put(bucket, key, meta)
-  }
-
-  def putObjectMultipartStart(bucket:String, key:String):InitiateMultipartUploadResult = {
+  override def putObjectMultipartStart(bucket:String, key:String):InitiateMultipartUploadResult = {
     val id = Math.abs(Random.nextLong()).toString
     val bucketFile = File(s"$dir/$bucket")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
@@ -83,14 +76,14 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     logger.debug(s"starting multipart upload for s3://$bucket/$key")
     InitiateMultipartUploadResult(bucket, key, id)
   }
-  def putObjectMultipartPart(bucket:String, key:String, partNumber:Int, uploadId:String, data:Array[Byte]) = {
+  override def putObjectMultipartPart(bucket:String, key:String, partNumber:Int, uploadId:String, data:Array[Byte]) = {
     val bucketFile = File(s"$dir/$bucket")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     val file = File(s"$dir/.mp/$bucket/$key/$uploadId/$partNumber")
     logger.debug(s"uploading multipart chunk $partNumber for s3://$bucket/$key")
     file.writeByteArray(data)(OpenOptions.default)
   }
-  def putObjectMultipartComplete(bucket:String, key:String, uploadId:String, request:CompleteMultipartUpload) = {
+  override def putObjectMultipartComplete(bucket:String, key:String, uploadId:String, request:CompleteMultipartUpload) = {
     val bucketFile = File(s"$dir/$bucket")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     val files = request.parts.map(part => File(s"$dir/.mp/$bucket/$key/$uploadId/${part.partNumber}"))
@@ -104,7 +97,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     CompleteMultipartUploadResult(bucket, key, file.md5)
   }
 
-  def copyObject(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String): CopyObjectResult = {
+  override def copyObject(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String): CopyObjectResult = {
     val sourceBucketFile = File(s"$dir/$sourceBucket")
     val destBucketFile = File(s"$dir/$destBucket")
     if (!sourceBucketFile.exists) throw NoSuchBucketException(sourceBucket)
@@ -114,23 +107,25 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     destFile.createIfNotExists(createParents = true)
     sourceFile.copyTo(destFile, overwrite = true)
     logger.debug(s"Copied s3://$sourceBucket/$sourceKey to s3://$destBucket/$destKey")
-    val sourceMeta = getMetaData(sourceBucket, sourceKey)
-    sourceMeta.foreach(meta => putMetaData(destBucket, destKey, meta))
+    val sourceMeta = metadataStore.get(sourceBucket, sourceKey)
+    sourceMeta.foreach(meta => metadataStore.put(destBucket, destKey, meta))
     CopyObjectResult(DateTime(sourceFile.lastModifiedTime.toEpochMilli), destFile.md5)
   }
 
-  def deleteObject(bucket:String, key:String): Unit = {
+  override def deleteObject(bucket:String, key:String): Unit = {
     val file = File(s"$dir/$bucket/$key")
     logger.debug(s"deleting object s://$bucket/$key")
     if (!file.exists) throw NoSuchKeyException(bucket, key)
     file.delete()
+    metadataStore.delete(bucket, key)
   }
 
-  def deleteBucket(bucket:String): Unit = {
+  override def deleteBucket(bucket:String): Unit = {
     val bucketFile = File(s"$dir/$bucket")
     logger.debug(s"deleting bucket s://$bucket")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     bucketFile.delete()
+    metadataStore.remove(bucket)
   }
 
 }

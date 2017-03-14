@@ -24,6 +24,16 @@ class MapMetadataStore(path: String) extends MetadataStore {
     map.close()
     meta
   }
+  override def delete(bucket: String, key: String): Unit = {
+    val map = load(path, bucket)
+    map.delete(bytes(key))
+    map.close()
+  }
+
+  override def remove(bucket: String): Unit = {
+    val file = File(s"$path/$bucket.metadata")
+    if (file.exists) file.delete()
+  }
 
   private def load(path: String, bucket: String): DB = {
     val options = new Options()

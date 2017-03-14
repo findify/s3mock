@@ -48,7 +48,7 @@ case class PutObject(implicit provider:Provider, mat:Materializer) extends LazyL
         .via(new S3ChunkedProtocolStage)
         .fold(ByteString(""))(_ ++ _)
         .map(data => {
-          Try(provider.putObject(bucket, path, data.toArray, metadata)) match {
+          Try(provider.putObject(bucket, path, data.toArray, Option(metadata))) match {
             case Success(()) => HttpResponse(StatusCodes.OK)
             case Failure(e: NoSuchBucketException) =>
               HttpResponse(
@@ -75,7 +75,7 @@ case class PutObject(implicit provider:Provider, mat:Materializer) extends LazyL
       val result = request.entity.dataBytes
         .fold(ByteString(""))(_ ++ _)
         .map(data => {
-          Try(provider.putObject(bucket, path, data.toArray, metadata)) match {
+          Try(provider.putObject(bucket, path, data.toArray, Option(metadata))) match {
             case Success(()) => HttpResponse(StatusCodes.OK)
             case Failure(e: NoSuchBucketException) =>
               HttpResponse(

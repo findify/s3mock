@@ -12,10 +12,12 @@ import scala.util.{Failure, Success, Try}
   */
 case class CopyObject(implicit provider: Provider) extends LazyLogging {
   def split(path: String):Option[(String,String)] = {
-    path.split("/").toList match {
+    val noFirstSlash = path.replaceAll("^/+", "")
+    val result = noFirstSlash.split("/").toList match {
       case bucket :: tail => Some(bucket -> tail.mkString("/"))
       case _ => None
     }
+    result
   }
   def route(destBucket:String, destKey:String) = put {
     headerValueByName("x-amz-copy-source") { source =>

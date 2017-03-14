@@ -10,6 +10,10 @@ crossScalaVersions := Seq("2.11.8", "2.12.1")
 
 val akkaVersion = "2.4.17"
 
+licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
+
+homepage := Some(url("https://github.com/findify/s3mock"))
+
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-stream" % akkaVersion,
   "com.typesafe.akka" %% "akka-http" % "10.0.4",
@@ -23,8 +27,6 @@ libraryDependencies ++= Seq(
   "org.iq80.leveldb" % "leveldb" % "0.9"
 )
 
-licenses += ("MIT", url("https://opensource.org/licenses/MIT"))
-
 parallelExecution in Test := false
 
 publishMavenStyle := true
@@ -37,15 +39,7 @@ publishTo := {
     Some("releases"  at nexus + "service/local/staging/deploy/maven2")
 }
 
-pomExtra :=
-  <url>https://github.com/findify/s3mock</url>
-    <licenses>
-      <license>
-        <name>MIT</name>
-        <url>https://opensource.org/licenses/MIT</url>
-        <distribution>repo</distribution>
-      </license>
-    </licenses>
+pomExtra := (
     <scm>
       <url>git@github.com:findify/s3mock.git</url>
       <connection>scm:git:git@github.com:findify/s3mock.git</connection>
@@ -56,4 +50,4 @@ pomExtra :=
         <name>Roman Grebennikov</name>
         <url>http://www.dfdx.me</url>
       </developer>
-    </developers>
+    </developers>)

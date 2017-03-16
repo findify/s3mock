@@ -2,6 +2,7 @@ package io.findify.s3mock
 
 import java.util
 
+import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.{AmazonS3Exception, ListObjectsRequest, S3ObjectSummary}
 
 import scala.collection.JavaConverters._
@@ -94,8 +95,27 @@ class ListBucketTest extends S3MockTest {
     val list2  = s3.listObjects(req2)
     val summaries2 = list2.getObjectSummaries.map(_.getKey).toList
     list2.getCommonPrefixes.asScala.toList shouldBe List("photos/2006/February/", "photos/2006/January/")
-    summaries2 shouldBe List("photos/2006/")
+    summaries2 shouldBe Nil
   }
+
+  it should "obey delimiters && prefixes v2 (matching real s3)" ignore {
+    val s3 = AmazonS3ClientBuilder.defaultClient()
+    s3.createBucket("findify-merlin")
+    s3.putObject("findify-merlin", "sample.jpg", "xxx")
+    s3.putObject("findify-merlin", "photos/2006/January/sample.jpg", "yyy")
+    s3.putObject("findify-merlin", "photos/2006/February/sample2.jpg", "zzz")
+    s3.putObject("findify-merlin", "photos/2006/February/sample3.jpg", "zzz")
+    s3.putObject("findify-merlin", "photos/2006/February/sample4.jpg", "zzz")
+    val req2 = new ListObjectsRequest()
+    req2.setBucketName("findify-merlin")
+    req2.setDelimiter("/")
+    req2.setPrefix("photos/")
+    val list2  = s3.listObjects(req2)
+    val summaries2 = list2.getObjectSummaries.map(_.getKey).toList
+    list2.getCommonPrefixes.asScala.toList shouldBe List("photos/2006/")
+    summaries2 shouldBe Nil
+  }
+
 
   it should "obey delimiters && prefixes v3" in {
     s3.createBucket("list5")
@@ -109,6 +129,6 @@ class ListBucketTest extends S3MockTest {
     val list2  = s3.listObjects(req2)
     val summaries2 = list2.getObjectSummaries.map(_.getKey).toList
     list2.getCommonPrefixes.asScala.toList shouldBe List("dev/someEvent/")
-    summaries2 shouldBe List("dev/")
+    summaries2 shouldBe Nil
   }
 }

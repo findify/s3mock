@@ -131,4 +131,13 @@ class ListBucketTest extends S3MockTest {
     list2.getCommonPrefixes.asScala.toList shouldBe List("dev/someEvent/")
     summaries2 shouldBe Nil
   }
+
+  it should "list objects in lexicographical order" in {
+    s3.createBucket("list6")
+    s3.putObject("list6", "b", "xx")
+    s3.putObject("list6", "a", "xx")
+    s3.putObject("list6", "0", "xx")
+    val list = s3.listObjects("list6")
+    list.getObjectSummaries.asScala.map(_.getKey).toList shouldBe List("0", "a", "b")
+  }
 }

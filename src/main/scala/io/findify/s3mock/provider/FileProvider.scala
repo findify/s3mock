@@ -51,7 +51,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
       case None => Nil
     }
     val filteredFiles = files.filterNot(f => commonPrefixes.exists(p => f.key.startsWith(p)))
-    ListBucket(bucket, prefix, delimiter, commonPrefixes, filteredFiles)
+    ListBucket(bucket, prefix, delimiter, commonPrefixes, filteredFiles.sortBy(_.key))
   }
 
   override def createBucket(name:String, bucketConfig:CreateBucketConfiguration) = {

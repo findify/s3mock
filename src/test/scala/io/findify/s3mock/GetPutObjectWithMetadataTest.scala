@@ -10,57 +10,59 @@ import scala.collection.JavaConversions._
   * Created by shutty on 8/10/16.
   */
 class GetPutObjectWithMetadataTest extends S3MockTest {
-  "s3 mock" should "put object with metadata" in {
-    s3.createBucket("getput").getName shouldBe "getput"
-    s3.listBuckets().exists(_.getName == "getput") shouldBe true
+  override def behaviour(fixture: => Fixture): Unit = {
+    val s3 = fixture.client
+    it should "put object with metadata" in {
+      s3.createBucket("getput").getName shouldBe "getput"
+      s3.listBuckets().exists(_.getName == "getput") shouldBe true
 
-    val is = new ByteArrayInputStream("bar".getBytes("UTF-8"))
-    val metadata: ObjectMetadata = new ObjectMetadata()
-    metadata.setContentType("application/json")
-    metadata.setUserMetadata(Map("metamaic" -> "maic"))
+      val is = new ByteArrayInputStream("bar".getBytes("UTF-8"))
+      val metadata: ObjectMetadata = new ObjectMetadata()
+      metadata.setContentType("application/json")
+      metadata.setUserMetadata(Map("metamaic" -> "maic"))
 
-    s3.putObject("getput", "foo", is, metadata)
+      s3.putObject("getput", "foo", is, metadata)
 
-    val s3Object: S3Object = s3.getObject("getput", "foo")
-    val actualMetadata: ObjectMetadata = s3Object.getObjectMetadata
-    actualMetadata.getContentType shouldBe "application/json"
+      val s3Object: S3Object = s3.getObject("getput", "foo")
+      val actualMetadata: ObjectMetadata = s3Object.getObjectMetadata
+      actualMetadata.getContentType shouldBe "application/json"
 
-    getContent(s3Object) shouldBe "bar"
+      getContent(s3Object) shouldBe "bar"
+    }
+
+    it should "put object with metadata, but skip unvalid content-type" in {
+      s3.createBucket("getput").getName shouldBe "getput"
+      s3.listBuckets().exists(_.getName == "getput") shouldBe true
+
+      val is = new ByteArrayInputStream("bar".getBytes("UTF-8"))
+      val metadata: ObjectMetadata = new ObjectMetadata()
+      metadata.setContentType("application")
+      metadata.setUserMetadata(Map("metamaic" -> "maic"))
+
+      s3.putObject("getput", "foo", is, metadata)
+
+      val s3Object: S3Object = s3.getObject("getput", "foo")
+      val actualMetadata: ObjectMetadata = s3Object.getObjectMetadata
+      actualMetadata.getContentType shouldBe "application/octet-stream"
+
+      getContent(s3Object) shouldBe "bar"
+    }
+    it should "put object in subdirs with metadata, but skip unvalid content-type" in {
+      s3.createBucket("getput").getName shouldBe "getput"
+      s3.listBuckets().exists(_.getName == "getput") shouldBe true
+
+      val is = new ByteArrayInputStream("bar".getBytes("UTF-8"))
+      val metadata: ObjectMetadata = new ObjectMetadata()
+      metadata.setContentType("application")
+      metadata.setUserMetadata(Map("metamaic" -> "maic"))
+
+      s3.putObject("getput", "foo1/bar", is, metadata)
+
+      val s3Object: S3Object = s3.getObject("getput", "foo1/bar")
+      val actualMetadata: ObjectMetadata = s3Object.getObjectMetadata
+      actualMetadata.getContentType shouldBe "application/octet-stream"
+
+      getContent(s3Object) shouldBe "bar"
+    }
   }
-
-  "s3 mock" should "put object with metadata, but skip unvalid content-type" in {
-    s3.createBucket("getput").getName shouldBe "getput"
-    s3.listBuckets().exists(_.getName == "getput") shouldBe true
-
-    val is = new ByteArrayInputStream("bar".getBytes("UTF-8"))
-    val metadata: ObjectMetadata = new ObjectMetadata()
-    metadata.setContentType("application")
-    metadata.setUserMetadata(Map("metamaic" -> "maic"))
-
-    s3.putObject("getput", "foo", is, metadata)
-
-    val s3Object: S3Object = s3.getObject("getput", "foo")
-    val actualMetadata: ObjectMetadata = s3Object.getObjectMetadata
-    actualMetadata.getContentType shouldBe "application/octet-stream"
-
-    getContent(s3Object) shouldBe "bar"
-  }
-  "s3 mock" should "put object in subdirs with metadata, but skip unvalid content-type" in {
-    s3.createBucket("getput").getName shouldBe "getput"
-    s3.listBuckets().exists(_.getName == "getput") shouldBe true
-
-    val is = new ByteArrayInputStream("bar".getBytes("UTF-8"))
-    val metadata: ObjectMetadata = new ObjectMetadata()
-    metadata.setContentType("application")
-    metadata.setUserMetadata(Map("metamaic" -> "maic"))
-
-    s3.putObject("getput", "foo1/bar", is, metadata)
-
-    val s3Object: S3Object = s3.getObject("getput", "foo1/bar")
-    val actualMetadata: ObjectMetadata = s3Object.getObjectMetadata
-    actualMetadata.getContentType shouldBe "application/octet-stream"
-
-    getContent(s3Object) shouldBe "bar"
-  }
-
 }

@@ -1,25 +1,16 @@
 package io.findify.s3mock
 
 import akka.actor.ActorSystem
-import akka.event.Logging
 import akka.http.scaladsl.Http
-import akka.stream.ActorMaterializer
-import akka.http.scaladsl._
-import akka.http.scaladsl.model.headers.Location
-import akka.http.scaladsl.model.{HttpHeader, HttpResponse, Multipart, StatusCodes}
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
-import akka.stream.scaladsl.{Framing, Sink}
-import akka.util.ByteString
+import akka.stream.ActorMaterializer
 import com.typesafe.scalalogging.LazyLogging
-import io.findify.s3mock.error.NoSuchKeyException
-import io.findify.s3mock.provider.{FileProvider, Provider}
-import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
-import io.findify.s3mock.route.{PutObject, _}
+import io.findify.s3mock.provider.{FileProvider, InMemoryProvider, Provider}
+import io.findify.s3mock.route._
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import scala.io.Source
-import scala.util.{Failure, Success, Try}
 /**
   * Created by shutty on 8/9/16.
   */
@@ -76,6 +67,8 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
 }
 
 object S3Mock {
+  def apply(port: Int): S3Mock = new S3Mock(port, new InMemoryProvider)
   def apply(port:Int, dir:String) = new S3Mock(port, new FileProvider(dir))
+  def create(port:Int) = apply(port) // Java API
   def create(port:Int, dir:String) = apply(port, dir) // Java API
 }

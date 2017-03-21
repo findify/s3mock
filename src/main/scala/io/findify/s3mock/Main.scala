@@ -1,5 +1,6 @@
 package io.findify.s3mock
 
+import better.files.File
 import io.findify.s3mock.provider.FileProvider
 
 /**
@@ -7,7 +8,7 @@ import io.findify.s3mock.provider.FileProvider
   */
 object Main {
   def main(args: Array[String]): Unit = {
-    val server = new S3Mock(8001, new FileProvider("/tmp/s3mock"))
+    val server = new S3Mock(8001, new FileProvider(File.newTemporaryDirectory(prefix = "s3mock").pathAsString))
     server.start
   }
 }

@@ -1,12 +1,9 @@
 package io.findify.s3mock
 
 import akka.stream._
-import akka.stream.scaladsl.{Flow, GraphDSL}
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.util.ByteString
 import com.typesafe.scalalogging.LazyLogging
-
-import scala.util.matching.Regex
 
 /**
   * Created by shutty on 8/11/16.
@@ -20,7 +17,6 @@ class ChunkBuffer extends LazyLogging {
   def addChunk(data:ByteString) = buffer = buffer ++ data
   def readHeader:Option[Header] = {
     val headerBuffer = buffer.take(90)
-    val bufferString = headerBuffer.utf8String
     val size = headerBuffer.takeWhile(hexChars.contains)
     val sig = headerBuffer.drop(size.length).take(83)
     if ((size.length <= 8) && (sig.length == 83) && sig.startsWith(";chunk-signature=") && sig.endsWith("\r\n")) {

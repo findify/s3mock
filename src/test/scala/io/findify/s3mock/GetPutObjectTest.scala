@@ -8,6 +8,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
 import akka.stream.ActorMaterializer
 import com.amazonaws.services.s3.model._
+import com.amazonaws.util.IOUtils
 
 import scala.concurrent.duration._
 import scala.collection.JavaConversions._
@@ -103,4 +104,24 @@ class GetPutObjectTest extends S3MockTest {
     result shouldBe List(".foo", "foo")
   }
 
+  it should "support ranged get requests" in {
+
+    val data = new Array[Byte](1000)
+    Random.nextBytes(data)
+
+    val bucket = "rangedbuck"
+    val key = "data"
+
+    s3.createBucket(bucket)
+    s3.putObject(bucket, key, new ByteArrayInputStream(data), new ObjectMetadata())
+
+    val (startByte, endByte) = (5L, 55L)
+    val getObjectRequest = new GetObjectRequest(bucket, key)
+    getObjectRequest.setRange(startByte, endByte)
+
+    val sliceOfData = data.slice(startByte.toInt, endByte.toInt + 1)
+    val retrievedData = IOUtils.toByteArray(s3.getObject(getObjectRequest).getObjectContent)
+
+    retrievedData shouldEqual sliceOfData
+  }
 }

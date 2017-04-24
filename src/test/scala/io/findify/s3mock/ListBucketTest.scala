@@ -154,14 +154,14 @@ class ListBucketTest extends S3MockTest {
       s3.putObject("list7", "dev/40/2017/03/13/00/_SUCCESS", "xxx")
       s3.putObject("list7", "dev/40/2017/03/13/01/_SUCCESS", "xxx")
       s3.putObject("list7", "dev/50/2017/03/13/00/_SUCCESS", "xxx")
-      s3.putObject("list7", "dev/60/2017/03/13/01/_SUCCESS", "xxx")
+      s3.putObject("list7", "dev/50/2017/03/13/01/_SUCCESS", "xxx")
       val req2 = new ListObjectsRequest()
       req2.setBucketName("list7")
       req2.setDelimiter("/")
       req2.setPrefix("dev/")
       val list2 = s3.listObjects(req2)
       val summaries2 = list2.getObjectSummaries.map(_.getKey).toList
-      list2.getCommonPrefixes.asScala.toList shouldBe List("dev/10", "dev/20", "dev/30", "dev/40", "dev/50")
+      list2.getCommonPrefixes.asScala.toList shouldBe List("dev/10/", "dev/20/", "dev/30/", "dev/40/", "dev/50/")
       summaries2 shouldBe Nil
     }
   }

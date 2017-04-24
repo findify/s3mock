@@ -46,7 +46,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     val files = bucketFiles.map(f => {Content(f.toString.drop(bucketFileString.length+1).dropWhile(_ == '/'), DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD")}).toList
     logger.debug(s"listing bucket contents: ${files.map(_.key)}")
     val commonPrefixes = delimiter match {
-      case Some(del) => files.flatMap(f => commonPrefix(f.key, prefixNoLeadingSlash, del)).distinct
+      case Some(del) => files.flatMap(f => commonPrefix(f.key, prefixNoLeadingSlash, del)).distinct.sorted
       case None => Nil
     }
     val filteredFiles = files.filterNot(f => commonPrefixes.exists(p => f.key.startsWith(p)))

@@ -1,7 +1,5 @@
 package io.findify.s3mock
 
-import java.util.UUID
-
 import better.files.File
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
@@ -18,7 +16,7 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
   val s3 = new AmazonS3Client(new BasicAWSCredentials("hello", "world"))
   s3.setEndpoint("http://127.0.0.1:8001")
 
-  val workDir = s"/tmp/${UUID.randomUUID()}"
+  val workDir = File.newTemporaryDirectory().pathAsString
   val server = new S3Mock(8001, new FileProvider(workDir))
 
   override def beforeAll = {

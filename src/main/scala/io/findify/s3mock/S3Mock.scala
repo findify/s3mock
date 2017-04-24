@@ -1,29 +1,20 @@
 package io.findify.s3mock
 
 import akka.actor.ActorSystem
-import akka.event.Logging
 import akka.http.scaladsl.Http
-import akka.stream.ActorMaterializer
-import akka.http.scaladsl._
-import akka.http.scaladsl.model.headers.Location
-import akka.http.scaladsl.model.{HttpHeader, HttpResponse, Multipart, StatusCodes}
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
-import akka.stream.scaladsl.{Framing, Sink}
-import akka.util.ByteString
+import akka.stream.ActorMaterializer
 import com.typesafe.scalalogging.LazyLogging
-import io.findify.s3mock.error.NoSuchKeyException
 import io.findify.s3mock.provider.{FileProvider, Provider}
-import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
 import io.findify.s3mock.route.{PutObject, _}
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import scala.io.Source
-import scala.util.{Failure, Success, Try}
 /**
   * Created by shutty on 8/9/16.
   */
-class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSystem.create("sqsmock")) extends LazyLogging {
+class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSystem.create("s3mock")) extends LazyLogging {
   implicit val p = provider
   private var bind:Http.ServerBinding = _
 

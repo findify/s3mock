@@ -1,5 +1,4 @@
 package io.findify.s3mock.provider
-import java.io.{ObjectInputStream, ObjectOutputStream}
 import java.util.UUID
 
 import akka.http.scaladsl.model.DateTime

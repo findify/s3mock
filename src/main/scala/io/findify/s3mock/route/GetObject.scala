@@ -22,50 +22,53 @@ import scala.util.{Failure, Success, Try}
   */
 case class GetObject(implicit provider: Provider) extends LazyLogging {
   def route(bucket: String, path: String, params: Map[String, String]) = get {
-    complete {
-      logger.debug(s"get object: bucket=$bucket, path=$path")
 
-      Try(provider.getObject(bucket, path)) match {
-        case Success(GetObjectData(data, metaOption)) =>
-          metaOption match {
-            case Some(meta) =>
-              val entity: Strict = ContentType.parse(meta.getContentType) match {
-                case Right(value) => HttpEntity(value, data)
-                case Left(error) => HttpEntity(data)
-              }
+    withRangeSupport {
+      complete {
+        logger.debug(s"get object: bucket=$bucket, path=$path")
 
-              if (params.contains("tagging")){
-                handleTaggingRequest(meta)
-              } else {
+        Try(provider.getObject(bucket, path)) match {
+          case Success(GetObjectData(data, metaOption)) =>
+            metaOption match {
+              case Some(meta) =>
+                val entity: Strict = ContentType.parse(meta.getContentType) match {
+                  case Right(value) => HttpEntity(value, data)
+                  case Left(error) => HttpEntity(data)
+                }
+
+                if (params.contains("tagging")) {
+                  handleTaggingRequest(meta)
+                } else {
+                  HttpResponse(
+                    status = StatusCodes.OK,
+                    entity = entity,
+                    headers = `Last-Modified`(DateTime(1970, 1, 1)) :: metadataToHeaderList(meta)
+                  )
+                }
+
+              case None =>
                 HttpResponse(
                   status = StatusCodes.OK,
-                  entity = entity,
-                  headers = `Last-Modified`(DateTime(1970, 1, 1)) :: metadataToHeaderList(meta)
+                  entity = HttpEntity(data),
+                  headers = List(`Last-Modified`(DateTime(1970, 1, 1)))
                 )
-              }
-
-            case None =>
-              HttpResponse(
-                status = StatusCodes.OK,
-                entity = HttpEntity(data),
-                headers = List(`Last-Modified`(DateTime(1970, 1, 1)))
-              )
-          }
-        case Failure(e: NoSuchKeyException) =>
-          HttpResponse(
-            StatusCodes.NotFound,
-            entity = e.toXML.toString()
-          )
-        case Failure(e: NoSuchBucketException) =>
-          HttpResponse(
-            StatusCodes.NotFound,
-            entity = e.toXML.toString()
-          )
-        case Failure(t) =>
-          HttpResponse(
-            StatusCodes.InternalServerError,
-            entity = InternalErrorException(t).toXML.toString()
-          )
+            }
+          case Failure(e: NoSuchKeyException) =>
+            HttpResponse(
+              StatusCodes.NotFound,
+              entity = e.toXML.toString()
+            )
+          case Failure(e: NoSuchBucketException) =>
+            HttpResponse(
+              StatusCodes.NotFound,
+              entity = e.toXML.toString()
+            )
+          case Failure(t) =>
+            HttpResponse(
+              StatusCodes.InternalServerError,
+              entity = InternalErrorException(t).toXML.toString()
+            )
+        }
       }
     }
   }

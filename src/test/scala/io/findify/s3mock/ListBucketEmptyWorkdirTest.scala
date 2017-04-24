@@ -1,12 +1,12 @@
 package io.findify.s3mock
 
-import java.util.UUID
-
-import scala.collection.JavaConverters._
+import better.files.File
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import io.findify.s3mock.provider.FileProvider
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
+
+import scala.collection.JavaConverters._
 
 /**
   * Created by shutty on 8/30/16.
@@ -14,7 +14,7 @@ import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 class ListBucketEmptyWorkdirTest extends FlatSpec with Matchers with BeforeAndAfterAll {
   lazy val s3 = new AmazonS3Client(new BasicAWSCredentials("hello", "world"))
 
-  val workDir = s"/tmp/${UUID.randomUUID()}"
+  val workDir = File.newTemporaryDirectory().pathAsString
   lazy val server = new S3Mock(8001, new FileProvider(workDir))
 
   override def beforeAll = {

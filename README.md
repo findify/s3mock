@@ -1,6 +1,6 @@
 # S3 mock library for Java/Scala
 
-[![Build Status](https://travis-ci.org/shuttie/s3mock.svg?branch=master)](https://travis-ci.org/shuttie/s3mock)
+[![Build Status](https://travis-ci.org/findify/s3mock.svg?branch=master)](https://travis-ci.org/findify/s3mock)
 
 s3mock is a web service implementing AWS S3 API, which can be used for local testing of your code using S3
 but without hitting real S3 endpoints.

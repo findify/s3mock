@@ -9,8 +9,12 @@ import scala.collection.JavaConversions._
   * Created by shutty on 8/28/16.
   */
 class PutBucketTest extends AWSCliTest {
-  "awscli mb" should "create bucket" in {
-    val response = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.PUT, uri = "http://127.0.0.1:8001/awscli")), 10.seconds)
-    s3.listBuckets().exists(_.getName == "awscli") shouldBe true
+  override def behaviour(fixture: => Fixture) = {
+    val s3 = fixture.client
+    val port = fixture.port
+    it should "create bucket with AWS CLI" in {
+      val response = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.PUT, uri = s"http://127.0.0.1:$port/awscli")), 10.seconds)
+      s3.listBuckets().exists(_.getName == "awscli") shouldBe true
+    }
   }
 }

@@ -6,9 +6,8 @@ import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import com.typesafe.scalalogging.LazyLogging
-import io.findify.s3mock.provider.{FileProvider, Provider}
-import io.findify.s3mock.route.{PutObject, _}
-
+import io.findify.s3mock.provider.{FileProvider, InMemoryProvider, Provider}
+import io.findify.s3mock.route._
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 /**
@@ -67,6 +66,8 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
 }
 
 object S3Mock {
+  def apply(port: Int): S3Mock = new S3Mock(port, new InMemoryProvider)
   def apply(port:Int, dir:String) = new S3Mock(port, new FileProvider(dir))
+  def create(port:Int) = apply(port) // Java API
   def create(port:Int, dir:String) = apply(port, dir) // Java API
 }

@@ -47,7 +47,8 @@ class DeleteTest extends S3MockTest {
       s3.putObject("delobj2", "somefile1", "foo1")
       s3.putObject("delobj2", "somefile2", "foo2")
       s3.listObjects("delobj2", "somefile").getObjectSummaries.size() shouldBe 2
-      s3.deleteObjects(new DeleteObjectsRequest("delobj2").withKeys("somefile1", "somefile2"))
+      val del = s3.deleteObjects(new DeleteObjectsRequest("delobj2").withKeys("somefile1", "somefile2"))
+      del.getDeletedObjects.size() shouldBe 2
       s3.listObjects("delobj2", "somefile").getObjectSummaries.size() shouldBe 0
     }
   }

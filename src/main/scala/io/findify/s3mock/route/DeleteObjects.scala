@@ -32,7 +32,8 @@ case class DeleteObjects (implicit provider: Provider) extends LazyLogging {
                 res.copy(error = path +: res.error)
             }
           })
-          HttpResponse(StatusCodes.OK, entity = response.toXML.toString())
+          val xmlResponse = response.toXML.toString()
+          HttpResponse(StatusCodes.OK, entity = xmlResponse)
         }
       }}
     }

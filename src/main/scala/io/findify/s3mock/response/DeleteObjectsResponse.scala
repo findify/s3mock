@@ -6,13 +6,11 @@ package io.findify.s3mock.response
 case class DeleteObjectsResponse(deleted: Seq[String], error: Seq[String]) {
   def toXML = {
     <DeleteResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
-      <Deleted>
-        { deleted.map(d => <Key>d</Key>) }
-      </Deleted>
+        { deleted.map(d => <Deleted><Key>{d}</Key></Deleted>) }
       { if (error.nonEmpty) {
       <Error>
         { error.map(e => {
-        <Key>e</Key>
+        <Key>{e}</Key>
           <Code>InternalError</Code>
           <Message>Cannot delete</Message>
       })}

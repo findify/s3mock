@@ -1,8 +1,7 @@
-0.2.1
+0.2.1 (not released)
 =======
 * Bump akka to 2.5.1
 * fix issue when DeleteObjects response was malformed for multi-object deletes
-* 
 
 0.2.0
 =======

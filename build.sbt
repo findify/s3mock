@@ -24,7 +24,8 @@ libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-java-sdk-s3" % "1.11.129",
   "org.scalatest" %% "scalatest" % "3.0.3" % "test",
   "ch.qos.logback" % "logback-classic" % "1.2.3" % "test",
-  "org.iq80.leveldb" % "leveldb" % "0.9"
+  "org.iq80.leveldb" % "leveldb" % "0.9",
+  "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "0.8" % "test"
 )
 
 parallelExecution in Test := false

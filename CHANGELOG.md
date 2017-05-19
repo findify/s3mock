@@ -2,6 +2,7 @@
 =======
 * Bump akka to 2.5.1
 * fix issue when DeleteObjects response was malformed for multi-object deletes
+* alpakka support test case
 
 0.2.0
 =======

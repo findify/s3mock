@@ -43,37 +43,45 @@ On maven, update your `pom.xml` in the following way:
 Scala:
 ```scala
     import io.findify.s3mock.S3Mock
-    import com.amazonaws.auth.AnonymousAWSCredentials
-    import com.amazonaws.services.s3.AmazonS3Client
+    import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
+    import com.amazonaws.services.s3.AmazonS3ClientBuilder
+
     
-    // create and start S3 API mock
+    /** Create and start S3 API mock. */
     val api = S3Mock(port = 8001, dir = "/tmp/s3")
     api.start
 
-    // AWS S3 client setup
-    val credentials = new AnonymousAWSCredentials()
-    val client = new AmazonS3Client(credentials)
-    // use IP for endpoint address as AWS S3 SDK uses DNS-based bucket access scheme
-    // resulting in attempts to connect to addresses like "bucketname.localhost"
-    // which requires specific DNS setup
-    client.setEndpoint("http://127.0.0.1:8001")
+    /** AWS S3 client setup.
+     *  Use IP for endpoint address; AWS S3 SDK uses DNS-based bucket access scheme
+     *  resulting in attempts to connect to addresses like "bucketname.localhost"
+     *  which requires specific DNS setup.
+     */
+    val endpoint = new EndpointConfiguration("http://127.0.0.1:8001", "us-west-2")
+    val client = AmazonS3ClientBuilder
+      .standard
+      .withEndpointConfiguration(endpoint)
+      .build
 
-    // use it as usual
+    /** Use it as usual. */
     client.createBucket("foo")
     client.putObject("foo", "bar", "baz")
 ```
 Java:
 ```java
     import io.findify.s3mock.S3Mock;
-    import com.amazonaws.auth.AnonymousAWSCredentials;
-    import com.amazonaws.services.s3.AmazonS3Client;
+    import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
+    import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 
     S3Mock api = S3Mock.create(8001, "/tmp/s3");
     api.start();
             
-    AmazonS3Client client = new AmazonS3Client(new AnonymousAWSCredentials());
-    // use IP endpoint to override DNS-based bucket addressing
-    client.setEndpoint("http://127.0.0.1:8001");
+    // Use IP endpoint to override DNS-based bucket addressing.
+    EndpointConfiguration endpoint = new EndpointConfiguration("http://127.0.0.1:8001", "us-west-2");
+    AmazonS3Client client = AmazonS3ClientBuilder
+      .standard()
+      .withEndpointConfiguration(endpoint)
+      .build();
+
     client.createBucket("testbucket");
     client.putObject("testbucket", "file/name", "contents");
 ```

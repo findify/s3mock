@@ -51,7 +51,12 @@ Java:
     S3Mock api = S3Mock.create(8001, "/tmp/s3");
     api.start();
             
-    // Use IP endpoint to override DNS-based bucket addressing.
+    /* AWS S3 client setup.
+     *  withPathStyleAccessEnabled(true) trick is required to overcome S3 default 
+     *  DNS-based bucket access scheme
+     *  resulting in attempts to connect to addresses like "bucketname.localhost"
+     *  which requires specific DNS setup.
+     */
     EndpointConfiguration endpoint = new EndpointConfiguration("http://localhost:8001", "us-west-2");
     AmazonS3Client client = AmazonS3ClientBuilder
       .standard()
@@ -74,7 +79,7 @@ Scala with AWS S3 SDK:
     val api = S3Mock(port = 8001, dir = "/tmp/s3")
     api.start
 
-    /** AWS S3 client setup.
+    /* AWS S3 client setup.
      *  withPathStyleAccessEnabled(true) trick is required to overcome S3 default 
      *  DNS-based bucket access scheme
      *  resulting in attempts to connect to addresses like "bucketname.localhost"

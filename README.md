@@ -28,7 +28,7 @@ Not supported features (these might be implemented later):
 s3mock package is available for Scala 2.11/2.12 (on Java 8). To install using SBT, add these
  statements to your `build.sbt`:
 
-    libraryDependencies += "io.findify" %% "s3mock" % "0.2.0" % "test",
+    libraryDependencies += "io.findify" %% "s3mock" % "0.2.1" % "test",
 
 On maven, update your `pom.xml` in the following way:
 ```xml
@@ -36,13 +36,34 @@ On maven, update your `pom.xml` in the following way:
     <dependency>
         <groupId>io.findify</groupId>
         <artifactId>s3mock_2.12</artifactId>
-        <version>0.2.0</version>
+        <version>0.2.1</version>
         <type>pom</type>
         <scope>test</scope>
     </dependency>
 ```
 ## Usage
-Scala:
+Java:
+```java
+    import io.findify.s3mock.S3Mock;
+    import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
+    import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+
+    S3Mock api = S3Mock.create(8001, "/tmp/s3");
+    api.start();
+            
+    // Use IP endpoint to override DNS-based bucket addressing.
+    EndpointConfiguration endpoint = new EndpointConfiguration("http://localhost:8001", "us-west-2");
+    AmazonS3Client client = AmazonS3ClientBuilder
+      .standard()
+      .withPathStyleAccessEnabled(true)  
+      .withEndpointConfiguration(endpoint)
+      .build();
+
+    client.createBucket("testbucket");
+    client.putObject("testbucket", "file/name", "contents");
+```
+
+Scala with AWS S3 SDK:
 ```scala
     import io.findify.s3mock.S3Mock
     import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
@@ -54,13 +75,15 @@ Scala:
     api.start
 
     /** AWS S3 client setup.
-     *  Use IP for endpoint address; AWS S3 SDK uses DNS-based bucket access scheme
+     *  withPathStyleAccessEnabled(true) trick is required to overcome S3 default 
+     *  DNS-based bucket access scheme
      *  resulting in attempts to connect to addresses like "bucketname.localhost"
      *  which requires specific DNS setup.
      */
-    val endpoint = new EndpointConfiguration("http://127.0.0.1:8001", "us-west-2")
+    val endpoint = new EndpointConfiguration("http://localhost:8001", "us-west-2")
     val client = AmazonS3ClientBuilder
       .standard
+      .withPathStyleAccessEnabled(true)  
       .withEndpointConfiguration(endpoint)
       .build
 
@@ -68,24 +91,27 @@ Scala:
     client.createBucket("foo")
     client.putObject("foo", "bar", "baz")
 ```
-Java:
-```java
-    import io.findify.s3mock.S3Mock;
-    import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
-    import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 
-    S3Mock api = S3Mock.create(8001, "/tmp/s3");
-    api.start();
-            
-    // Use IP endpoint to override DNS-based bucket addressing.
-    EndpointConfiguration endpoint = new EndpointConfiguration("http://127.0.0.1:8001", "us-west-2");
-    AmazonS3Client client = AmazonS3ClientBuilder
-      .standard()
-      .withEndpointConfiguration(endpoint)
-      .build();
+Scala with Alpakka 0.8:
+```scala
+    import akka.actor.ActorSystem
+    import akka.stream.ActorMaterializer
+    import akka.stream.alpakka.s3.scaladsl.S3Client
+    import akka.stream.scaladsl.Sink
+    import com.typesafe.config.ConfigFactory
+    import scala.collection.JavaConverters._
 
-    client.createBucket("testbucket");
-    client.putObject("testbucket", "file/name", "contents");
+    val config = ConfigFactory.parseMap(Map(
+      "akka.stream.alpakka.s3.proxy.host" -> "localhost",
+      "akka.stream.alpakka.s3.proxy.port" -> 8001,
+      "akka.stream.alpakka.s3.proxy.secure" -> false,
+      "akka.stream.alpakka.s3.path-style-access" -> true
+    ).asJava)
+    implicit val system = ActorSystem.create("test", config)
+    implicit val mat = ActorMaterializer()
+    val s3a = S3Client()
+    val contents = s3a.download("bucket", "key").runWith(Sink.reduce(_ ++ _)).map(_.utf8String)
+      
 ```
     
 ## License

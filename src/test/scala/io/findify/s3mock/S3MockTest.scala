@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, Materializer}
 import akka.stream.alpakka.s3.scaladsl.S3Client
 import better.files.File
-import com.amazonaws.auth.{BasicAWSCredentials, DefaultAWSCredentialsProviderChain}
+import com.amazonaws.auth.{AWSStaticCredentialsProvider, AnonymousAWSCredentials, BasicAWSCredentials, DefaultAWSCredentialsProviderChain}
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3Client, AmazonS3ClientBuilder}
 import com.amazonaws.services.s3.model.S3Object
@@ -73,7 +73,7 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
     val endpoint = new EndpointConfiguration(s"http://$host:$port", "us-east-1")
     AmazonS3ClientBuilder.standard()
       .withPathStyleAccessEnabled(true)
-      .withCredentials(new DefaultAWSCredentialsProviderChain())
+      .withCredentials(new AWSStaticCredentialsProvider(new AnonymousAWSCredentials()))
       .withEndpointConfiguration(endpoint)
       .build()
   }

@@ -1,8 +1,9 @@
-0.2.1 (not released)
+0.2.1
 =======
 * Bump akka to 2.5.1
 * fix issue when DeleteObjects response was malformed for multi-object deletes
 * alpakka support test case
+* fix subpath get/delete issues [#45](https://github.com/findify/s3mock/issues/45)
 
 0.2.0
 =======

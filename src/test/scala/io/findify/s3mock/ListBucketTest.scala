@@ -164,5 +164,17 @@ class ListBucketTest extends S3MockTest {
       list2.getCommonPrefixes.asScala.toList shouldBe List("dev/10/", "dev/20/", "dev/30/", "dev/40/", "dev/50/")
       summaries2 shouldBe Nil
     }
+
+    it should "obey delimiters && prefixes when prefix equals to files name" in {
+      s3.createBucket("list8")
+      s3.putObject("list8", "dev/someEvent/2017/03/13/00/_SUCCESS", "xxx")
+      val req2 = new ListObjectsRequest()
+      req2.setBucketName("list8")
+      req2.setDelimiter("/")
+      req2.setPrefix("dev/someEvent/2017/03/13/00/_SUCCESS")
+      val list2  = s3.listObjects(req2)
+      list2.getObjectSummaries.size shouldEqual 1
+      list2.getObjectSummaries.head.getKey shouldEqual "dev/someEvent/2017/03/13/00/_SUCCESS"
+    }
   }
 }

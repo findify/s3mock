@@ -13,7 +13,7 @@ import com.amazonaws.util.IOUtils
 import scala.collection.JavaConversions._
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.util.Random
+import scala.util.{Random, Try}
 
 /**
   * Created by shutty on 8/10/16.
@@ -126,6 +126,15 @@ class GetPutObjectTest extends S3MockTest {
       val retrievedData = IOUtils.toByteArray(s3.getObject(getObjectRequest).getObjectContent)
 
       retrievedData shouldEqual sliceOfData
+    }
+
+    it should "return 404 on subpath request" in {
+      s3.createBucket("subpath")
+      s3.putObject("subpath", "some/path/example", "bar")
+      val noSlash = Try(s3.getObject("subpath", "some/path"))
+      noSlash.failed.get.asInstanceOf[AmazonS3Exception].getStatusCode shouldBe 404
+      val withSlash = Try(s3.getObject("subpath", "some/path/"))
+      withSlash.failed.get.asInstanceOf[AmazonS3Exception].getStatusCode shouldBe 404
     }
   }
 

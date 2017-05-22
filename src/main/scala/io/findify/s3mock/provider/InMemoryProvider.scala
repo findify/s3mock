@@ -148,7 +148,14 @@ class InMemoryProvider extends Provider with LazyLogging {
           logger.debug(s"deleting object s://$bucket/$key")
           bucketContent.keysInBucket.remove(key)
           metadataStore.delete(bucket, key)
-        case None => throw NoSuchKeyException(bucket, key)
+        case None => bucketContent.keysInBucket.keys.find(_.startsWith(key)) match {
+          case Some(_) =>
+            logger.debug(s"recursive delete by prefix is not supported by S3")
+            Unit
+          case None =>
+            logger.warn(s"key does not exist")
+            throw NoSuchKeyException(bucket, key)
+        }
       }
       case None => throw NoSuchBucketException(bucket)
     }

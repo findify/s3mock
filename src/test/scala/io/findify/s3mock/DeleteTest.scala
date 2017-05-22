@@ -51,5 +51,13 @@ class DeleteTest extends S3MockTest {
       del.getDeletedObjects.size() shouldBe 2
       s3.listObjects("delobj2", "somefile").getObjectSummaries.size() shouldBe 0
     }
+
+    it should "do nothing in case for deleting a subpath" in {
+      s3.createBucket("delobj3")
+      s3.putObject("delobj3", "some/path/foo1", "foo1")
+      s3.putObject("delobj3", "some/path/foo2", "foo2")
+      val del = s3.deleteObject("delobj3", "some/path")
+      s3.listObjects("delobj3", "some/path/").getObjectSummaries.size() shouldBe 2
+    }
   }
 }

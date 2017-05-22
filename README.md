@@ -15,11 +15,13 @@ Implemented API methods:
 * copy object
 * get object
 * delete object
+* batch delete
 
 Not supported features (these might be implemented later):
-* authentication: s3proxy will accept any credentials without validity checking
+* authentication: s3proxy will accept any credentials without validity and signature checking
 * bucket policy, ACL, versioning
-* object ACL, batch delete
+* object ACL
+* posix-incompatible key structure with file-based provider, for example keys `/some.dir/file.txt` and `/some.dir` in the same bucket
 
 ## Installation
 

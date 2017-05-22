@@ -136,6 +136,17 @@ class GetPutObjectTest extends S3MockTest {
       val withSlash = Try(s3.getObject("subpath", "some/path/"))
       withSlash.failed.get.asInstanceOf[AmazonS3Exception].getStatusCode shouldBe 404
     }
+
+    // this trick is not possible on POSIX-compliant file systems:
+    // So the test will always fail in file-based provider
+    it should "be possible to store /key and /key/bar objects at the same time" ignore {
+      s3.createBucket("prefix")
+      s3.putObject("prefix", "some/path", "bar")
+      s3.putObject("prefix", "some", "bar")
+      val noSlash = Try(s3.getObject("prefix", "some/path"))
+      val withSlash = Try(s3.getObject("prefix", "some"))
+      val br=1
+    }
   }
 
 }

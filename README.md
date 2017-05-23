@@ -46,7 +46,7 @@ On maven, update your `pom.xml` in the following way:
 Just point your s3 client to a localhost, enable path-style access, and it should work out of the box.
 
 There are two working modes for s3mock:
-* File-based: it will map a local directory as a regular s3 bucket. This mode can be useful when you need to have a bucket with some pre-loaded data.
+* File-based: it will map a local directory as a collection of s3 buckets. This mode can be useful when you need to have a bucket with some pre-loaded data (and too lazy to re-upload everything on each run).
 * In-memory: keep everything in RAM. All the data you've uploaded to s3mock will be wiped completely on shutdown. 
 
 Java:

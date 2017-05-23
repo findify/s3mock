@@ -42,13 +42,28 @@ On maven, update your `pom.xml` in the following way:
     </dependency>
 ```
 ## Usage
+
+Just point your s3 client to a localhost, enable path-style access, and it should work out of the box.
+
+There are two working modes for s3mock:
+* File-based: it will map a local directory as a regular s3 bucket. This mode can be useful when you need to have a bucket with some pre-loaded data.
+* In-memory: keep everything in RAM. All the data you've uploaded to s3mock will be wiped completely on shutdown. 
+
 Java:
 ```java
-    import io.findify.s3mock.S3Mock;
-    import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
+    import com.amazonaws.auth.AWSStaticCredentialsProvider;
+    import com.amazonaws.auth.AnonymousAWSCredentials;
+    import com.amazonaws.client.builder.AwsClientBuilder;
+    import com.amazonaws.services.s3.AmazonS3;
+    import com.amazonaws.services.s3.AmazonS3Builder;
+    import com.amazonaws.services.s3.AmazonS3Client;
     import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-
-    S3Mock api = S3Mock.create(8001, "/tmp/s3");
+    import io.findify.s3mock.S3Mock;
+    
+    /*
+     S3Mock.create(8001, "/tmp/s3");
+     */
+    S3Mock api = new S3Mock.Builder().withPort(8001).withInMemoryBackend().build();
     api.start();
             
     /* AWS S3 client setup.
@@ -62,17 +77,25 @@ Java:
       .standard()
       .withPathStyleAccessEnabled(true)  
       .withEndpointConfiguration(endpoint)
+      .withCredentials(new AWSStaticCredentialsProvider(new AnonymousAWSCredentials()))     
       .build();
 
     client.createBucket("testbucket");
     client.putObject("testbucket", "file/name", "contents");
+    api.stop();
 ```
 
 Scala with AWS S3 SDK:
 ```scala
     import io.findify.s3mock.S3Mock
-    import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
+    import com.amazonaws.auth.AWSStaticCredentialsProvider
+    import com.amazonaws.auth.AnonymousAWSCredentials
+    import com.amazonaws.client.builder.AwsClientBuilder
+    import com.amazonaws.services.s3.AmazonS3
+    import com.amazonaws.services.s3.AmazonS3Builder
+    import com.amazonaws.services.s3.AmazonS3Client
     import com.amazonaws.services.s3.AmazonS3ClientBuilder
+    import io.findify.s3mock.S3Mock
 
     
     /** Create and start S3 API mock. */
@@ -90,6 +113,7 @@ Scala with AWS S3 SDK:
       .standard
       .withPathStyleAccessEnabled(true)  
       .withEndpointConfiguration(endpoint)
+      .withCredentials(new AWSStaticCredentialsProvider(new AnonymousAWSCredentials()))     
       .build
 
     /** Use it as usual. */

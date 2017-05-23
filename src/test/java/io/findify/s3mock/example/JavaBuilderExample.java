@@ -4,18 +4,18 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.AnonymousAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Builder;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import io.findify.s3mock.S3Mock;
 
 /**
- * Created by shutty on 8/12/16.
+ * Created by shutty on 5/23/17.
  */
-public class JavaExample {
+public class JavaBuilderExample {
     public static void main(String[] args) {
-        S3Mock api = S3Mock.create(8001, "/tmp/s3");
+        S3Mock api = new S3Mock.Builder().withPort(8001).withInMemoryBackend().build();
         api.start();
-
         AmazonS3 client = AmazonS3ClientBuilder
                 .standard()
                 .withPathStyleAccessEnabled(true)
@@ -25,4 +25,5 @@ public class JavaExample {
         client.createBucket("testbucket");
         client.putObject("testbucket", "file/name", "contents");
     }
+
 }

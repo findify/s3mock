@@ -5,12 +5,12 @@ import io.findify.s3mock.provider.metadata.MetadataStore
 import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
 import io.findify.s3mock.response._
 
-/**
-  * Created by shutty on 8/9/16.
-  */
 
 case class GetObjectData(bytes: Array[Byte], metadata: Option[ObjectMetadata])
 
+/**
+  * Interface for provider implementations.
+  */
 trait Provider {
   def metadataStore: MetadataStore
   def listBuckets:ListAllMyBuckets

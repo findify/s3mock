@@ -1,6 +1,6 @@
 name := "s3mock"
 
-version := "0.2.1"
+version := "0.2.2"
 
 organization := "io.findify"
 
@@ -21,7 +21,7 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
   "com.github.pathikrit" %% "better-files" % "2.17.1",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.129",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.133",
   "org.scalatest" %% "scalatest" % "3.0.3" % "test",
   "ch.qos.logback" % "logback-classic" % "1.2.3" % "test",
   "org.iq80.leveldb" % "leveldb" % "0.9",

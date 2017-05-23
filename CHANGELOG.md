@@ -1,3 +1,10 @@
+0.2.2
+=======
+* More convenient and traditional Java API with Builder-style instance creation
+* Docs update for alpakka usage
+* Javadocs for all public API methods
+* use latest aws-java-sdk-s3 library
+
 0.2.1
 =======
 * Bump akka to 2.5.1

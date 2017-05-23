@@ -114,8 +114,9 @@ Scala with Alpakka 0.8:
     ).asJava)
     implicit val system = ActorSystem.create("test", config)
     implicit val mat = ActorMaterializer()
+    import system.dispatcher
     val s3a = S3Client()
-    val contents = s3a.download("bucket", "key").runWith(Sink.reduce(_ ++ _)).map(_.utf8String)
+    val contents = s3a.download("bucket", "key").runWith(Sink.reduce[ByteString](_ ++ _)).map(_.utf8String)
       
 ```
     

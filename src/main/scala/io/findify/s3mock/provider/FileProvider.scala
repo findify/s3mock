@@ -75,7 +75,12 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     if (!file.exists) throw NoSuchKeyException(bucket, key)
     if (file.isDirectory) throw NoSuchKeyException(bucket, key)
-    val meta = metadataStore.get(bucket, key)
+    var meta:Option[ObjectMetadata] = None
+    try{
+      meta = metadataStore.get(bucket, key)
+    }catch {
+      case ex:Exception=>
+    }
     GetObjectData(file.byteArray, meta)
   }
 

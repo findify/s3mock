@@ -70,12 +70,12 @@ class InMemoryProvider extends Provider with LazyLogging {
     CreateBucket(name)
   }
 
-  override def putObject(bucket: String, key: String, data: Array[Byte], objectMetadata: Option[ObjectMetadata] = None): Unit = {
+  override def putObject(bucket: String, key: String, data: Array[Byte], objectMetadata: ObjectMetadata): Unit = {
     bucketDataStore.get(bucket) match {
       case Some(bucketContent) =>
         logger.debug(s"putting object for s3://$bucket/$key, bytes = ${data.length}")
         bucketContent.keysInBucket.put(key, KeyContents(DateTime.now, data))
-        objectMetadata.foreach(meta => metadataStore.put(bucket, key, meta))
+        metadataStore.put(bucket, key, objectMetadata)
       case None => throw NoSuchBucketException(bucket)
     }
   }

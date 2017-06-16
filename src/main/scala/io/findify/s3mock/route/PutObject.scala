@@ -18,6 +18,7 @@ import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.S3ChunkedProtocolStage
 import io.findify.s3mock.error.{InternalErrorException, NoSuchBucketException}
 import io.findify.s3mock.provider.Provider
+import org.apache.commons.codec.digest.DigestUtils
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
@@ -40,15 +41,15 @@ case class PutObject(implicit provider:Provider, mat:Materializer) extends LazyL
   def completeSigned(bucket:String, path:String) = extractRequest { request =>
     complete {
 
-      val metadata: ObjectMetadata = new ObjectMetadata()
-      populateObjectMetadata(request, metadata)
 
       logger.info(s"put object $bucket/$path (signed)")
       val result = request.entity.dataBytes
         .via(new S3ChunkedProtocolStage)
         .fold(ByteString(""))(_ ++ _)
         .map(data => {
-          Try(provider.putObject(bucket, path, data.toArray, Option(metadata))) match {
+          val bytes = data.toArray
+          val metadata = populateObjectMetadata(request, bytes)
+          Try(provider.putObject(bucket, path, bytes, metadata)) match {
             case Success(()) => HttpResponse(StatusCodes.OK)
             case Failure(e: NoSuchBucketException) =>
               HttpResponse(
@@ -68,14 +69,14 @@ case class PutObject(implicit provider:Provider, mat:Materializer) extends LazyL
 
   def completePlain(bucket:String, path:String) = extractRequest { request =>
     complete {
-      val metadata: ObjectMetadata = new ObjectMetadata()
-      populateObjectMetadata(request, metadata)
 
       logger.info(s"put object $bucket/$path (unsigned)")
       val result = request.entity.dataBytes
         .fold(ByteString(""))(_ ++ _)
         .map(data => {
-          Try(provider.putObject(bucket, path, data.toArray, Option(metadata))) match {
+          val bytes = data.toArray
+          val metadata = populateObjectMetadata(request, bytes)
+          Try(provider.putObject(bucket, path, bytes, metadata)) match {
             case Success(()) => HttpResponse(StatusCodes.OK)
             case Failure(e: NoSuchBucketException) =>
               HttpResponse(
@@ -93,7 +94,8 @@ case class PutObject(implicit provider:Provider, mat:Materializer) extends LazyL
     }
   }
 
-  private def populateObjectMetadata(request: HttpRequest, metadata: ObjectMetadata) {
+  private def populateObjectMetadata(request: HttpRequest, bytes: Array[Byte]): ObjectMetadata = {
+    val metadata = new ObjectMetadata()
     val ignoredHeaders: util.HashSet[String] = new util.HashSet[String]()
     ignoredHeaders.add(Headers.DATE)
     ignoredHeaders.add(Headers.SERVER)
@@ -146,6 +148,9 @@ case class PutObject(implicit provider:Provider, mat:Materializer) extends LazyL
     if(metadata.getContentType == null){
       metadata.setContentType(request.entity.getContentType.toString)
     }
+    metadata.getRawMetadata
+    metadata.setContentMD5(DigestUtils.md5Hex(bytes))
+    metadata
   }
 
 }

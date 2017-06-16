@@ -2,6 +2,7 @@
 =======
 * windows compatibility in FileProvider ([#28](https://github.com/findify/s3mock/issues/28))
 * Max Keys not respected when calling list objects (V2) ([#47](https://github.com/findify/s3mock/issues/47))
+* getETag from getObjectMetadata returns null ([#48](https://github.com/findify/s3mock/issues/48))
 
 0.2.2
 =======

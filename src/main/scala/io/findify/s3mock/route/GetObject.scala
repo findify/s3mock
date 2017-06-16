@@ -134,6 +134,6 @@ case class GetObject(implicit provider: Provider) extends LazyLogging {
       .toList
       .flatten
 
-    headers ++ httpExpires.toList ++ userHeaders
+    headers ++ httpExpires.toList ++ userHeaders ++ Option(metadata.getContentMD5).map(md5 => RawHeader(Headers.ETAG, md5))
   }
 }

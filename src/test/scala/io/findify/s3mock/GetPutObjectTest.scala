@@ -147,6 +147,13 @@ class GetPutObjectTest extends S3MockTest {
       val withSlash = Try(s3.getObject("prefix", "some"))
       val br=1
     }
+
+    it should "have etag in metadata" in {
+      s3.createBucket("etag")
+      s3.putObject("etag", "file/name", "contents")
+      val data = s3.getObjectMetadata("etag", "file/name")
+      data.getETag shouldBe "98bf7d8c15784f0a3d63204441e1e2aa"
+    }
   }
 
 }

@@ -62,14 +62,14 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     logger.debug(s"creating bucket $name")
     CreateBucket(name)
   }
-  override def putObject(bucket:String, key:String, data:Array[Byte], objectMetadata: Option[ObjectMetadata] = None): Unit = {
+  override def putObject(bucket:String, key:String, data:Array[Byte], objectMetadata: ObjectMetadata): Unit = {
     val bucketFile = File(s"$dir/$bucket")
     val file = File(s"$dir/$bucket/$key")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     file.createIfNotExists(createParents = true)
     logger.debug(s"writing file for s3://$bucket/$key to $dir/$bucket/$key, bytes = ${data.length}")
     file.writeByteArray(data)(OpenOptions.default)
-    objectMetadata.foreach(meta => metadataStore.put(bucket, key, meta))
+    metadataStore.put(bucket, key, objectMetadata)
   }
   override def getObject(bucket:String, key:String): GetObjectData = {
     val bucketFile = File(s"$dir/$bucket")

@@ -1,5 +1,6 @@
 package io.findify.s3mock.provider
 import java.util.UUID
+import java.io.{File => JFile}
 
 import akka.http.scaladsl.model.DateTime
 import better.files.File
@@ -23,7 +24,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   override def metadataStore: MetadataStore = new MapMetadataStore(dir)
 
   override def listBuckets: ListAllMyBuckets = {
-    val buckets = File(dir).list.map(f => Bucket(f.name, DateTime(f.lastModifiedTime.toEpochMilli))).toList
+    val buckets = File(dir).list.map(f => Bucket(fromOs(f.name), DateTime(f.lastModifiedTime.toEpochMilli))).toList
     logger.debug(s"listing buckets: ${buckets.map(_.name)}")
     ListAllMyBuckets("root", UUID.randomUUID().toString, buckets)
   }
@@ -38,12 +39,12 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     val prefixNoLeadingSlash = prefix.getOrElse("").dropWhile(_ == '/')
     val bucketFile = File(s"$dir/$bucket/")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
-    val bucketFileString = bucketFile.toString
+    val bucketFileString = fromOs(bucketFile.toString)
     val bucketFiles = bucketFile.listRecursively.filter(f => {
-        val fString = f.toString.drop(bucketFileString.length).dropWhile(_ == '/')
+        val fString = fromOs(f.toString).drop(bucketFileString.length).dropWhile(_ == '/')
         fString.startsWith(prefixNoLeadingSlash) && !f.isDirectory
       })
-    val files = bucketFiles.map(f => {Content(f.toString.drop(bucketFileString.length+1).dropWhile(_ == '/'), DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD")}).toList
+    val files = bucketFiles.map(f => {Content(fromOs(f.toString).drop(bucketFileString.length+1).dropWhile(_ == '/'), DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD")}).toList
     logger.debug(s"listing bucket contents: ${files.map(_.key)}")
     val commonPrefixes = delimiter match {
       case Some(del) => files.flatMap(f => commonPrefix(f.key, prefixNoLeadingSlash, del)).distinct.sorted
@@ -139,6 +140,11 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     bucketFile.delete()
     metadataStore.remove(bucket)
+  }
+
+  /** Replace the os separator with a '/' */
+  private def fromOs(path: String): String = {
+    path.replace(JFile.separatorChar, '/')
   }
 
 }

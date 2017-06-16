@@ -29,7 +29,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     ListAllMyBuckets("root", UUID.randomUUID().toString, buckets)
   }
 
-  override def listBucket(bucket: String, prefix: Option[String], delimiter: Option[String]) = {
+  override def listBucket(bucket: String, prefix: Option[String], delimiter: Option[String], maxkeys: Option[Int]) = {
     def commonPrefix(dir: String, p: String, d: String): Option[String] = {
       dir.indexOf(d, p.length) match {
         case -1 => None
@@ -51,7 +51,9 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
       case None => Nil
     }
     val filteredFiles = files.filterNot(f => commonPrefixes.exists(p => f.key.startsWith(p)))
-    ListBucket(bucket, prefix, delimiter, commonPrefixes, filteredFiles.sortBy(_.key))
+    val count = maxkeys.getOrElse(Int.MaxValue)
+    val result = filteredFiles.sortBy(_.key)
+    ListBucket(bucket, prefix, delimiter, commonPrefixes, result.take(count), isTruncated = result.size>count)
   }
 
   override def createBucket(name:String, bucketConfig:CreateBucketConfiguration) = {

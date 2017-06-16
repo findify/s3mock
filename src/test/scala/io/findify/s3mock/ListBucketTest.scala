@@ -3,7 +3,7 @@ package io.findify.s3mock
 import java.util
 
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
-import com.amazonaws.services.s3.model.{AmazonS3Exception, ListObjectsRequest, S3ObjectSummary}
+import com.amazonaws.services.s3.model.{AmazonS3Exception, ListObjectsRequest, ListObjectsV2Request, S3ObjectSummary}
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -175,6 +175,17 @@ class ListBucketTest extends S3MockTest {
       val list2  = s3.listObjects(req2)
       list2.getObjectSummaries.size shouldEqual 1
       list2.getObjectSummaries.head.getKey shouldEqual "dev/someEvent/2017/03/13/00/_SUCCESS"
+    }
+
+    it should "obey withMaxKeys" in {
+      s3.createBucket("list7k")
+      s3.putObject("list7k", "b", "xx")
+      s3.putObject("list7k", "a", "xx")
+      s3.putObject("list7k", "c", "xx")
+      val request = new ListObjectsV2Request().withBucketName("list7k").withMaxKeys(2)
+      val list = s3.listObjectsV2(request)
+      list.getObjectSummaries.asScala.map(_.getKey).toList shouldBe List("a", "b")
+      list.isTruncated shouldBe true
     }
   }
 }

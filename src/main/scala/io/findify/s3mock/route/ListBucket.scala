@@ -13,10 +13,10 @@ import scala.util.{Failure, Success, Try}
   */
 case class ListBucket(implicit provider:Provider) extends LazyLogging {
   def route(bucket:String) = get {
-    parameter('prefix?, 'delimiter?) { (prefix, delimiter) =>
+    parameter('prefix?, 'delimiter?, Symbol("max-keys")?) { (prefix, delimiter, maxkeys) =>
       complete {
         logger.info(s"listing bucket $bucket with prefix=$prefix, delimiter=$delimiter")
-        Try(provider.listBucket(bucket, prefix, delimiter)) match {
+        Try(provider.listBucket(bucket, prefix, delimiter, maxkeys.map(_.toInt))) match {
           case Success(l) => HttpResponse(StatusCodes.OK, entity = l.toXML.toString)
           case Failure(e: NoSuchBucketException) =>
             HttpResponse(

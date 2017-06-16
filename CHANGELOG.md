@@ -1,3 +1,8 @@
+0.2.3
+=======
+* windows compatibility in FileProvider ([#28](https://github.com/findify/s3mock/issues/28))
+* Max Keys not respected when calling list objects (V2) ([#47](https://github.com/findify/s3mock/issues/47))
+
 0.2.2
 =======
 * More convenient and traditional Java API with Builder-style instance creation

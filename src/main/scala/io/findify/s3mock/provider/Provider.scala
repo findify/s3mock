@@ -14,7 +14,7 @@ case class GetObjectData(bytes: Array[Byte], metadata: Option[ObjectMetadata])
 trait Provider {
   def metadataStore: MetadataStore
   def listBuckets:ListAllMyBuckets
-  def listBucket(bucket:String, prefix:Option[String], delimiter: Option[String]):ListBucket
+  def listBucket(bucket:String, prefix:Option[String], delimiter: Option[String], maxkeys: Option[Int]):ListBucket
   def createBucket(name:String, bucketConfig:CreateBucketConfiguration):CreateBucket
   def putObject(bucket:String, key:String, data:Array[Byte], metadata: Option[ObjectMetadata] = None):Unit
   def getObject(bucket:String, key:String): GetObjectData

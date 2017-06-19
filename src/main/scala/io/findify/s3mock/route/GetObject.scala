@@ -117,11 +117,13 @@ case class GetObject(implicit provider: Provider) extends LazyLogging {
     )
   }
 
+  val headerBlacklist = Set("content-type", "connection")
   protected def metadataToHeaderList(metadata: ObjectMetadata): List[RawHeader] = {
     val headers = Option(metadata.getRawMetadata)
       .map(_.asScala.toMap)
       .map(_.map { case (key, value) => RawHeader(key, value.toString)}.toList)
       .toList.flatten
+      .filterNot(header => headerBlacklist.contains(header.lowercaseName))
 
     val httpExpires = Option(metadata.getHttpExpiresDate).map(date => RawHeader(Headers.EXPIRES, DateUtils.formatRFC822Date(date)))
 

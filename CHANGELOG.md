@@ -3,6 +3,8 @@
 * windows compatibility in FileProvider ([#28](https://github.com/findify/s3mock/issues/28))
 * Max Keys not respected when calling list objects (V2) ([#47](https://github.com/findify/s3mock/issues/47))
 * getETag from getObjectMetadata returns null ([#48](https://github.com/findify/s3mock/issues/48))
+* update to akka 2.5.2, akka-http 10.0.7
+* fix concurrent requests causing weird locking issues on FileProvider ([#52](https://github.com/findify/s3mock/issues/52))
 
 0.2.2
 =======

@@ -154,6 +154,13 @@ class GetPutObjectTest extends S3MockTest {
       val data = s3.getObjectMetadata("etag", "file/name")
       data.getETag shouldBe "98bf7d8c15784f0a3d63204441e1e2aa"
     }
+
+    it should "not fail concurrent requests" in {
+      s3.createBucket("concurrent")
+      s3.putObject("concurrent", "file/name", "contents")
+      val results = Range(1, 100).par.map(_ => IOUtils.toString(s3.getObject("concurrent", "file/name").getObjectContent)).toList
+      results.forall(_ == "contents") shouldBe true
+    }
   }
 
 }

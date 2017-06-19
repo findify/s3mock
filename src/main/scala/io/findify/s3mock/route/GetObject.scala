@@ -64,6 +64,7 @@ case class GetObject(implicit provider: Provider) extends LazyLogging {
               entity = e.toXML.toString()
             )
           case Failure(t) =>
+            logger.error("Oops: ", t)
             HttpResponse(
               StatusCodes.InternalServerError,
               entity = InternalErrorException(t).toXML.toString()

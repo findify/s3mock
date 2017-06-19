@@ -21,7 +21,9 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   val workDir = File(dir)
   if (!workDir.exists) workDir.createDirectories()
 
-  override def metadataStore: MetadataStore = new MapMetadataStore(dir)
+  private val meta = new MapMetadataStore(dir)
+
+  override def metadataStore: MetadataStore = meta
 
   override def listBuckets: ListAllMyBuckets = {
     val buckets = File(dir).list.map(f => Bucket(fromOs(f.name), DateTime(f.lastModifiedTime.toEpochMilli))).toList

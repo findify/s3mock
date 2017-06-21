@@ -87,7 +87,6 @@ Java:
 
 Scala with AWS S3 SDK:
 ```scala
-    import io.findify.s3mock.S3Mock
     import com.amazonaws.auth.AWSStaticCredentialsProvider
     import com.amazonaws.auth.AnonymousAWSCredentials
     import com.amazonaws.client.builder.AwsClientBuilder

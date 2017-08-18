@@ -1,6 +1,8 @@
 package io.findify.s3mock.route
 
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
+import java.nio.charset.StandardCharsets
+
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.{InternalErrorException, NoSuchBucketException}
@@ -17,7 +19,13 @@ case class PutObjectMultipartStart(implicit provider:Provider) extends LazyLoggi
       complete {
         logger.info(s"multipart upload start to $bucket/$path")
         Try(provider.putObjectMultipartStart(bucket, path)) match {
-          case Success(result) => HttpResponse(StatusCodes.OK, entity =result.toXML.toString())
+          case Success(result) =>
+            HttpResponse(
+              StatusCodes.OK,
+              entity = HttpEntity(
+                ContentTypes.`application/octet-stream`, result.toXML.toString().getBytes(StandardCharsets.UTF_8)
+              )
+            )
           case Failure(e: NoSuchBucketException) =>
             HttpResponse(
               StatusCodes.NotFound,

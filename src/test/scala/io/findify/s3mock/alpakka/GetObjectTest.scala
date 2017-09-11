@@ -25,7 +25,7 @@ class GetObjectTest extends S3MockTest {
     implicit val mat = fixture.mat
 
 
-    it should "get objects via alpakka" ignore {
+    it should "get objects via alpakka" in {
       s3.createBucket("alpakka1")
       s3.putObject("alpakka1", "test1", "foobar")
       val result = Await.result(fixture.alpakka.download("alpakka1", "test1").runWith(Sink.seq), 5.second)
@@ -33,7 +33,7 @@ class GetObjectTest extends S3MockTest {
       str shouldBe "foobar"
     }
 
-    it should "get by range" ignore {
+    it should "get by range" in {
       s3.createBucket("alpakka2")
       s3.putObject("alpakka2", "test2", "foobar")
       val result = Await.result(fixture.alpakka.download("alpakka2", "test2", ByteRange(1, 4)).runWith(Sink.seq), 5.second)

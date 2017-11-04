@@ -2,6 +2,8 @@
 =======
 * pom -> jar dependency type doc fix
 * support alpakka multipart uploads
+* support alpakka listObjects ([#66](https://github.com/findify/s3mock/issues/66))
+* fix bug with etag on FileProvider being alsays "0" ([#70](https://github.com/findify/s3mock/issues/70))
 
 0.2.3
 =======

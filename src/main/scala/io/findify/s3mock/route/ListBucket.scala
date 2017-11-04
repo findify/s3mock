@@ -1,6 +1,6 @@
 package io.findify.s3mock.route
 
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.{InternalErrorException, NoSuchBucketException}
@@ -17,16 +17,19 @@ case class ListBucket(implicit provider:Provider) extends LazyLogging {
       complete {
         logger.info(s"listing bucket $bucket with prefix=$prefix, delimiter=$delimiter")
         Try(provider.listBucket(bucket, prefix, delimiter, maxkeys.map(_.toInt))) match {
-          case Success(l) => HttpResponse(StatusCodes.OK, entity = l.toXML.toString)
+          case Success(l) => HttpResponse(
+            StatusCodes.OK,
+            entity = HttpEntity(ContentType(MediaTypes.`application/xml`, HttpCharsets.`UTF-8`), l.toXML.toString)
+          )
           case Failure(e: NoSuchBucketException) =>
             HttpResponse(
               StatusCodes.NotFound,
-              entity = e.toXML.toString()
+              entity = HttpEntity(ContentType(MediaTypes.`application/xml`, HttpCharsets.`UTF-8`), e.toXML.toString)
             )
           case Failure(t) =>
             HttpResponse(
               StatusCodes.InternalServerError,
-              entity = InternalErrorException(t).toXML.toString()
+              entity = HttpEntity(ContentType(MediaTypes.`application/xml`, HttpCharsets.`UTF-8`), InternalErrorException(t).toXML.toString)
             )
         }
       }

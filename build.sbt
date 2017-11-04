@@ -1,3 +1,5 @@
+import com.typesafe.sbt.packager.docker._
+
 name := "s3mock"
 
 version := "0.2.3"
@@ -52,3 +54,11 @@ pomExtra := (
         <url>http://www.dfdx.me</url>
       </developer>
     </developers>)
+
+enablePlugins(JavaAppPackaging)
+
+maintainer in Docker := "S3mock"
+packageSummary in Docker := "S3moock"
+packageDescription := "Mock Service For S3"
+dockerUpdateLatest := true
+dockerExposedPorts := Seq(8001)

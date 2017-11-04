@@ -4,6 +4,7 @@
 * support alpakka multipart uploads
 * support alpakka listObjects ([#66](https://github.com/findify/s3mock/issues/66))
 * fix bug with etag on FileProvider being alsays "0" ([#70](https://github.com/findify/s3mock/issues/70))
+* fix last-modified header always being equal to "1970-01-01 00:00:00"([65](https://github.com/findify/s3mock/issues/70))
 
 0.2.3
 =======

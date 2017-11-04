@@ -76,6 +76,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     file.createIfNotExists(createParents = true)
     logger.debug(s"writing file for s3://$bucket/$key to $dir/$bucket/$key, bytes = ${data.length}")
     file.writeByteArray(data)(OpenOptions.default)
+    objectMetadata.setLastModified(org.joda.time.DateTime.now().toDate)
     metadataStore.put(bucket, key, objectMetadata)
   }
   override def getObject(bucket:String, key:String): GetObjectData = {

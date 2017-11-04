@@ -1,9 +1,11 @@
 package io.findify.s3mock
 
 import java.util
+import java.util.Date
 
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.{AmazonS3Exception, ListObjectsRequest, ListObjectsV2Request, S3ObjectSummary}
+import org.joda.time.DateTime
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -192,8 +194,15 @@ class ListBucketTest extends S3MockTest {
       s3.createBucket("list9")
       s3.putObject("list9", "foo1", "xxx")
       s3.putObject("list9", "foo2", "yyy")
-      val list = s3.listObjects("list", "foo").getObjectSummaries.asScala.toList
+      val list = s3.listObjects("list9", "foo").getObjectSummaries.asScala.toList
       list.find(_.getKey == "foo1").map(_.getETag) shouldBe Some("f561aaf6ef0bf14d4208bb46a4ccb3ad")
+    }
+
+    it should "set correct last-modified header" in {
+      s3.createBucket("list10")
+      s3.putObject("list10", "foo", "xxx")
+      val list = s3.listObjects("list10").getObjectSummaries.asScala.toList
+      list.find(_.getKey == "foo").map(_.getLastModified.after(DateTime.now().minusMinutes(1).toDate)) shouldBe Some(true)
     }
   }
 }

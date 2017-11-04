@@ -1,6 +1,7 @@
 package io.findify.s3mock.provider
 
-import java.util.UUID
+import java.time.Instant
+import java.util.{Date, UUID}
 
 import akka.http.scaladsl.model.DateTime
 import com.amazonaws.services.s3.model.ObjectMetadata
@@ -75,6 +76,7 @@ class InMemoryProvider extends Provider with LazyLogging {
       case Some(bucketContent) =>
         logger.debug(s"putting object for s3://$bucket/$key, bytes = ${data.length}")
         bucketContent.keysInBucket.put(key, KeyContents(DateTime.now, data))
+        objectMetadata.setLastModified(org.joda.time.DateTime.now().toDate)
         metadataStore.put(bucket, key, objectMetadata)
       case None => throw NoSuchBucketException(bucket)
     }

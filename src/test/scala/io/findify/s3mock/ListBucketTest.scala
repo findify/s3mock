@@ -187,5 +187,13 @@ class ListBucketTest extends S3MockTest {
       list.getObjectSummaries.asScala.map(_.getKey).toList shouldBe List("a", "b")
       list.isTruncated shouldBe true
     }
+
+    it should "have correct etags" in {
+      s3.createBucket("list9")
+      s3.putObject("list9", "foo1", "xxx")
+      s3.putObject("list9", "foo2", "yyy")
+      val list = s3.listObjects("list", "foo").getObjectSummaries.asScala.toList
+      list.find(_.getKey == "foo1").map(_.getETag) shouldBe Some("f561aaf6ef0bf14d4208bb46a4ccb3ad")
+    }
   }
 }

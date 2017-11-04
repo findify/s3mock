@@ -1,6 +1,6 @@
 package io.findify.s3mock.provider
 import java.util.UUID
-import java.io.{File => JFile}
+import java.io.{FileInputStream, File => JFile}
 
 import akka.http.scaladsl.model.DateTime
 import better.files.File
@@ -11,6 +11,7 @@ import io.findify.s3mock.error.{NoSuchBucketException, NoSuchKeyException}
 import io.findify.s3mock.provider.metadata.{MapMetadataStore, MetadataStore}
 import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
 import io.findify.s3mock.response._
+import org.apache.commons.codec.digest.DigestUtils
 
 import scala.util.Random
 
@@ -46,7 +47,11 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
         val fString = fromOs(f.toString).drop(bucketFileString.length).dropWhile(_ == '/')
         fString.startsWith(prefixNoLeadingSlash) && !f.isDirectory
       })
-    val files = bucketFiles.map(f => {Content(fromOs(f.toString).drop(bucketFileString.length+1).dropWhile(_ == '/'), DateTime(f.lastModifiedTime.toEpochMilli), "0", f.size, "STANDARD")}).toList
+    val files = bucketFiles.map(f => {
+      val stream = new FileInputStream(f.toJava)
+      val md5 = DigestUtils.md5Hex(stream)
+      Content(fromOs(f.toString).drop(bucketFileString.length+1).dropWhile(_ == '/'), DateTime(f.lastModifiedTime.toEpochMilli), md5, f.size, "STANDARD")
+    }).toList
     logger.debug(s"listing bucket contents: ${files.map(_.key)}")
     val commonPrefixes = delimiter match {
       case Some(del) => files.flatMap(f => commonPrefix(f.key, prefixNoLeadingSlash, del)).distinct.sorted

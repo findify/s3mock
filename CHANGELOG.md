@@ -1,3 +1,8 @@
+0.2.4 (not yet released)
+=======
+* pom -> jar dependency type doc fix
+* support alpakka multipart uploads
+
 0.2.3
 =======
 * windows compatibility in FileProvider ([#28](https://github.com/findify/s3mock/issues/28))

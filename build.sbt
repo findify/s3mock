@@ -1,6 +1,6 @@
 name := "s3mock"
 
-version := "0.2.3"
+version := "0.2.4"
 
 organization := "io.findify"
 
@@ -52,6 +52,22 @@ pomExtra := (
         <url>http://www.dfdx.me</url>
       </developer>
     </developers>)
+
+enablePlugins(DockerPlugin)
+assemblyJarName in assembly := "s3mock.jar"
+mainClass in assembly := Some("io.findify.s3mock.Main")
+test in assembly := {}
+
+dockerfile in docker := new Dockerfile {
+  from("openjdk:9.0.1-11-jre-slim")
+  expose(8001)
+  add(assembly.value, "/app/s3mock.jar")
+  entryPoint("java", "-Xmx128m", "-jar", "/app/s3mock.jar")
+}
+imageNames in docker := Seq(
+  ImageName(s"findify/s3mock:${version.value.replaceAll("\\+", "_")}"),
+  ImageName(s"findify/s3mock:latest")
+)
 
 /*enablePlugins(JavaAppPackaging)
 

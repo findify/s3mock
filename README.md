@@ -40,6 +40,12 @@ On maven, update your `pom.xml` in the following way:
         <scope>test</scope>
     </dependency>
 ```
+
+S3Mock is also available as a [docker container](https://hub.docker.com/r/findify/s3mock/) for out-of-jvm testing:
+```bash
+docker run -p 8001:8001 findify/s3mock:latest
+```
+
 ## Usage
 
 Just point your s3 client to a localhost, enable path-style access, and it should work out of the box.

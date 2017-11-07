@@ -37,7 +37,8 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
           concat(
             ListBucket().route(bucket),
             CreateBucket().route(bucket),
-            DeleteBucket().route(bucket)
+            DeleteBucket().route(bucket),
+            DeleteObjects().route(bucket)
           )
         } ~ parameterMap { params =>
           path(RemainingPath) { key =>
@@ -59,7 +60,7 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
         }
       }
 
-    bind = Await.result(http.bindAndHandle(route, "localhost", port), Duration.Inf)
+    bind = Await.result(http.bindAndHandle(route, "0.0.0.0", port), Duration.Inf)
     bind
   }
 

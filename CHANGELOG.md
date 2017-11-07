@@ -1,3 +1,13 @@
+0.2.4 (not yet released)
+=======
+* pom -> jar dependency type doc fix
+* support alpakka multipart uploads
+* support alpakka listObjects ([#66](https://github.com/findify/s3mock/issues/66))
+* fix bug with etag on FileProvider being alsays "0" ([#70](https://github.com/findify/s3mock/issues/70))
+* fix last-modified header always being equal to "1970-01-01 00:00:00"([65](https://github.com/findify/s3mock/issues/70))
+* wrong content-type for listObjects ([#60](https://github.com/findify/s3mock/issues/60))
+* deleteObjects broken on aws s3 sdk 2.0 ([#71](https://github.com/findify/s3mock/issues/60))
+
 0.2.3
 =======
 * windows compatibility in FileProvider ([#28](https://github.com/findify/s3mock/issues/28))

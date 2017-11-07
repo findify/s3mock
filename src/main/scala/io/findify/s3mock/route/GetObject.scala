@@ -2,6 +2,7 @@ package io.findify.s3mock.route
 
 import java.io.StringWriter
 import java.net.URLDecoder
+import java.util.Date
 
 import akka.http.scaladsl.model.HttpEntity.Strict
 import akka.http.scaladsl.model._
@@ -118,10 +119,15 @@ case class GetObject(implicit provider: Provider) extends LazyLogging {
   }
 
   val headerBlacklist = Set("content-type", "connection")
-  protected def metadataToHeaderList(metadata: ObjectMetadata): List[RawHeader] = {
+  protected def metadataToHeaderList(metadata: ObjectMetadata): List[HttpHeader] = {
     val headers = Option(metadata.getRawMetadata)
       .map(_.asScala.toMap)
-      .map(_.map { case (key, value) => RawHeader(key, value.toString)}.toList)
+      .map(_.map {
+        case (_, date: Date) =>
+          `Last-Modified`(DateTime(new org.joda.time.DateTime(date).getMillis))
+        case (key, value) =>
+          RawHeader(key, value.toString)
+      }.toList)
       .toList.flatten
       .filterNot(header => headerBlacklist.contains(header.lowercaseName))
 

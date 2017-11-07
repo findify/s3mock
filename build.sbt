@@ -4,11 +4,11 @@ version := "0.2.3"
 
 organization := "io.findify"
 
-scalaVersion := "2.12.3"
+scalaVersion := "2.12.4"
 
-crossScalaVersions := Seq("2.11.11", "2.12.2")
+crossScalaVersions := Seq("2.11.11", "2.12.4")
 
-val akkaVersion = "2.5.4"
+val akkaVersion = "2.5.6"
 
 licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
 
@@ -21,11 +21,11 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
   "com.github.pathikrit" %% "better-files" % "2.17.1",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.192",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.224",
   "org.scalatest" %% "scalatest" % "3.0.4" % "test",
   "ch.qos.logback" % "logback-classic" % "1.2.3" % "test",
   "org.iq80.leveldb" % "leveldb" % "0.9",
-  "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "0.11" % "test"
+  "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "0.14" % "test"
 )
 
 parallelExecution in Test := false
@@ -52,3 +52,12 @@ pomExtra := (
         <url>http://www.dfdx.me</url>
       </developer>
     </developers>)
+
+/*enablePlugins(JavaAppPackaging)
+
+maintainer in Docker := "S3mock"
+packageSummary in Docker := "S3Mock"
+packageDescription := "Mock Service For S3"
+dockerUpdateLatest := true
+dockerExposedPorts := Seq(8001)
+*/

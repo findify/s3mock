@@ -82,6 +82,12 @@ class InMemoryProvider extends Provider with LazyLogging {
     }
   }
 
+  override def copyObjectMultipart(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String, part: Int, uploadId:String, fromByte: Int, toByte: Int, newMeta: Option[ObjectMetadata] = None): CopyObjectResult = {
+    val data = getObject(sourceBucket, sourceKey).bytes.slice(fromByte, toByte + 1)
+    putObjectMultipartPart(destBucket, destKey, part, uploadId, data)
+    new CopyObjectResult(DateTime.now, DigestUtils.md5Hex(data))
+  }
+
   override def getObject(bucket: String, key: String): GetObjectData = {
     bucketDataStore.get(bucket) match {
       case Some(bucketContent) => bucketContent.keysInBucket.get(key) match {

@@ -44,6 +44,7 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
           path(RemainingPath) { key =>
             concat(
               GetObject().route(bucket, key.toString(), params),
+              CopyObjectMultipart().route(bucket, key.toString()),
               CopyObject().route(bucket, key.toString()),
               PutObjectMultipart().route(bucket, key.toString()),
               PutObjectMultipartStart().route(bucket, key.toString()),

@@ -24,6 +24,7 @@ trait Provider {
   def deleteObject(bucket:String, key:String):Unit
   def deleteBucket(bucket:String):Unit
   def copyObject(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String, newMeta: Option[ObjectMetadata] = None): CopyObjectResult
+  def copyObjectMultipart(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String,  partNumber:Int, uploadId:String, fromByte: Int, toByte:Int,  meta: Option[ObjectMetadata] = None): CopyObjectResult
 }
 
 

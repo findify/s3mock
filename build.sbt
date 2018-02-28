@@ -1,6 +1,6 @@
 name := "s3mock"
 
-version := "0.2.4"
+version := "0.2.4-8-jdk-slim"
 
 organization := "io.findify"
 
@@ -59,7 +59,7 @@ mainClass in assembly := Some("io.findify.s3mock.Main")
 test in assembly := {}
 
 dockerfile in docker := new Dockerfile {
-  from("openjdk:9.0.1-11-jre-slim")
+  from("openjdk:8-jdk-slim")
   expose(8001)
   add(assembly.value, "/app/s3mock.jar")
   entryPoint("java", "-Xmx128m", "-jar", "/app/s3mock.jar")

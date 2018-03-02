@@ -1,6 +1,6 @@
 name := "s3mock"
 
-version := "0.2.4-8-jdk-slim"
+version := "0.2.4.1"
 
 organization := "io.findify"
 
@@ -24,7 +24,7 @@ libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-java-sdk-s3" % "1.11.224",
   "org.scalatest" %% "scalatest" % "3.0.4" % "test",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
-  "org.iq80.leveldb" % "leveldb" % "0.9",
+  "org.iq80.leveldb" % "leveldb" % "0.10",
   "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "0.14" % "test"
 )
 
@@ -59,7 +59,7 @@ mainClass in assembly := Some("io.findify.s3mock.Main")
 test in assembly := {}
 
 dockerfile in docker := new Dockerfile {
-  from("openjdk:8-jdk-slim")
+  from("openjdk:9.0.1-11-jre-slim")
   expose(8001)
   add(assembly.value, "/app/s3mock.jar")
   entryPoint("java", "-Xmx128m", "-jar", "/app/s3mock.jar")

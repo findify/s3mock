@@ -46,6 +46,11 @@ S3Mock is also available as a [docker container](https://hub.docker.com/r/findif
 docker run -p 8001:8001 findify/s3mock:latest
 ```
 
+To mount a directory containing the prepared content, mount the volume and set the `S3MOCK_DATA_DIR` environment variable:
+```bash
+docker run -p 8001:8001 -v /host/path/to/s3mock/:/tmp/s3mock/ -e "S3MOCK_DATA_DIR=/tmp/s3mock" findify/s3mock:latest
+```
+
 ## Usage
 
 Just point your s3 client to a localhost, enable path-style access, and it should work out of the box.

@@ -8,7 +8,8 @@ import akka.stream.ActorMaterializer
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.provider.{FileProvider, InMemoryProvider, Provider}
 import io.findify.s3mock.route._
-import scala.concurrent.Await
+
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 
 /**
@@ -68,9 +69,23 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
 
   /**
     * Stop s3mock instance. For file-based working mode, it will not clean the mounted folder.
+    * This one is also not shutting down the underlying ActorSystem
     */
-  def stop = Await.result(bind.unbind(), Duration.Inf)
-
+  def stop: Unit = Await.result(bind.unbind(), Duration.Inf)
+  /**
+    * Stop s3mock instance and shutdown the underlying ActorSystem.
+    */
+  def shutdown: Unit = {
+    import system.dispatcher
+    val stopped = for {
+      _ <- bind.unbind()
+      _ <- Http().shutdownAllConnectionPools()
+      _ <- system.terminate()
+    } yield {
+      Unit
+    }
+    Await.result(stopped, Duration.Inf)
+  }
 }
 
 object S3Mock {

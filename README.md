@@ -93,7 +93,7 @@ Java:
 
     client.createBucket("testbucket");
     client.putObject("testbucket", "file/name", "contents");
-    api.stop();
+    api.shutdown(); // kills the underlying actor system. Use api.stop() to just unbind the port.
 ```
 
 Scala with AWS S3 SDK:
@@ -130,6 +130,7 @@ Scala with AWS S3 SDK:
     /** Use it as usual. */
     client.createBucket("foo")
     client.putObject("foo", "bar", "baz")
+    api.shutdown() // this one terminates the actor system. Use api.stop() to just unbind the service without messing with the ActorSystem
 ```
 
 Scala with Alpakka 0.17:

@@ -105,7 +105,8 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     logger.debug(s"uploading multipart chunk $partNumber for s3://$bucket/$key")
     file.writeByteArray(data)(OpenOptions.default)
   }
-  override def putObjectMultipartComplete(bucket:String, key:String, uploadId:String, request:CompleteMultipartUpload) = {
+
+  override def putObjectMultipartComplete(bucket:String, key:String, uploadId:String, request:CompleteMultipartUpload): CompleteMultipartUploadResult = {
     val bucketFile = File(s"$dir/$bucket")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     val files = request.parts.map(part => File(s"$dir/.mp/$bucket/$key/$uploadId/${part.partNumber}"))
@@ -132,6 +133,13 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     val sourceMeta = newMeta.orElse(metadataStore.get(sourceBucket, sourceKey))
     sourceMeta.foreach(meta => metadataStore.put(destBucket, destKey, meta))
     CopyObjectResult(DateTime(sourceFile.lastModifiedTime.toEpochMilli), destFile.md5)
+  }
+
+
+  override def copyObjectMultipart(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String, part: Int, uploadId:String, fromByte: Int, toByte: Int, newMeta: Option[ObjectMetadata] = None): CopyObjectResult = {
+    val data = getObject(sourceBucket, sourceKey).bytes.slice(fromByte, toByte + 1)
+    putObjectMultipartPart(destBucket, destKey, part, uploadId, data)
+    new CopyObjectResult(DateTime.now, DigestUtils.md5Hex(data))
   }
 
   override def deleteObject(bucket:String, key:String): Unit = {

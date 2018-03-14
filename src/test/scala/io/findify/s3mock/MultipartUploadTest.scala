@@ -9,7 +9,7 @@ import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
-import com.amazonaws.services.s3.model.{AmazonS3Exception, CompleteMultipartUploadRequest, InitiateMultipartUploadRequest, UploadPartRequest}
+import com.amazonaws.services.s3.model._
 import org.apache.commons.codec.digest.DigestUtils
 
 import scala.collection.JavaConverters._

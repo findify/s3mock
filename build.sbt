@@ -62,7 +62,7 @@ dockerfile in docker := new Dockerfile {
   from("openjdk:9.0.1-11-jre-slim")
   expose(8001)
   add(assembly.value, "/app/s3mock.jar")
-  entryPoint("java", "-Xmx128m", "-jar", "/app/s3mock.jar")
+  entryPoint("java", "-Xmx128m", "-jar", "--add-modules", "java.xml.bind", "/app/s3mock.jar")
 }
 imageNames in docker := Seq(
   ImageName(s"findify/s3mock:${version.value.replaceAll("\\+", "_")}"),

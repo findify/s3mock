@@ -1,3 +1,14 @@
+0.2.5
+=======
+* multipart copy support
+* fix issue with % char on multipart alpakka uploads
+* add JAXB module on java 9 docker container
+* fix OverlappingFileLockException in GetObject ([#83](https://github.com/findify/s3mock/issues/83))
+* docker: allow serving a volume-mounted directory
+* fix s3mock not correctly shutting down during internal ActorSystem being active ([#67](https://github.com/findify/s3mock/issues/67))
+* bump better-files dependency to 3.x ([#17](https://github.com/findify/s3mock/issues/17))
+* migrate build to sbt 1.1, use akka-http 10.1.x
+
 0.2.4
 =======
 * pom -> jar dependency type doc fix

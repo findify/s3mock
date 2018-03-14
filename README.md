@@ -64,6 +64,7 @@ Java:
     import com.amazonaws.auth.AWSStaticCredentialsProvider;
     import com.amazonaws.auth.AnonymousAWSCredentials;
     import com.amazonaws.client.builder.AwsClientBuilder;
+    import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
     import com.amazonaws.services.s3.AmazonS3;
     import com.amazonaws.services.s3.AmazonS3Builder;
     import com.amazonaws.services.s3.AmazonS3Client;
@@ -100,6 +101,7 @@ Scala with AWS S3 SDK:
     import com.amazonaws.auth.AWSStaticCredentialsProvider
     import com.amazonaws.auth.AnonymousAWSCredentials
     import com.amazonaws.client.builder.AwsClientBuilder
+    import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
     import com.amazonaws.services.s3.AmazonS3
     import com.amazonaws.services.s3.AmazonS3Builder
     import com.amazonaws.services.s3.AmazonS3Client

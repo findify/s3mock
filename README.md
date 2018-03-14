@@ -132,7 +132,7 @@ Scala with AWS S3 SDK:
     client.putObject("foo", "bar", "baz")
 ```
 
-Scala with Alpakka 0.8:
+Scala with Alpakka 0.17:
 ```scala
     import akka.actor.ActorSystem
     import akka.stream.ActorMaterializer
@@ -151,7 +151,7 @@ Scala with Alpakka 0.8:
     implicit val mat = ActorMaterializer()
     import system.dispatcher
     val s3a = S3Client()
-    val contents = s3a.download("bucket", "key").runWith(Sink.reduce[ByteString](_ ++ _)).map(_.utf8String)
+    val contents = s3a.download("bucket", "key")._1.runWith(Sink.reduce[ByteString](_ ++ _)).map(_.utf8String)
       
 ```
     

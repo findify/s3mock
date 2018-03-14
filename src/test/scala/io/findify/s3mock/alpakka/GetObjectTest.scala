@@ -28,7 +28,7 @@ class GetObjectTest extends S3MockTest {
     it should "get objects via alpakka" in {
       s3.createBucket("alpakka1")
       s3.putObject("alpakka1", "test1", "foobar")
-      val result = Await.result(fixture.alpakka.download("alpakka1", "test1").runWith(Sink.seq), 5.second)
+      val result = Await.result(fixture.alpakka.download("alpakka1", "test1")._1.runWith(Sink.seq), 5.second)
       val str = result.fold(ByteString(""))(_ ++ _).utf8String
       str shouldBe "foobar"
     }
@@ -36,7 +36,7 @@ class GetObjectTest extends S3MockTest {
     it should "get by range" in {
       s3.createBucket("alpakka2")
       s3.putObject("alpakka2", "test2", "foobar")
-      val result = Await.result(fixture.alpakka.download("alpakka2", "test2", ByteRange(1, 4)).runWith(Sink.seq), 5.second)
+      val result = Await.result(fixture.alpakka.download("alpakka2", "test2", Some(ByteRange(1, 4)))._1.runWith(Sink.seq), 5.second)
       val str = result.fold(ByteString(""))(_ ++ _).utf8String
       str shouldBe "ooba"
     }

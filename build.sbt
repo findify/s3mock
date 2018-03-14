@@ -1,6 +1,6 @@
 name := "s3mock"
 
-version := "0.2.4.1"
+version := "0.2.5"
 
 organization := "io.findify"
 
@@ -8,7 +8,7 @@ scalaVersion := "2.12.4"
 
 crossScalaVersions := Seq("2.11.11", "2.12.4")
 
-val akkaVersion = "2.5.6"
+val akkaVersion = "2.5.11"
 
 licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
 
@@ -16,16 +16,16 @@ homepage := Some(url("https://github.com/findify/s3mock"))
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-  "com.typesafe.akka" %% "akka-http" % "10.0.10",
+  "com.typesafe.akka" %% "akka-http" % "10.1.0",
   "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % "test",
-  "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
-  "com.github.pathikrit" %% "better-files" % "2.17.1",
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.224",
-  "org.scalatest" %% "scalatest" % "3.0.4" % "test",
-  "ch.qos.logback" % "logback-classic" % "1.2.3",
+  "org.scala-lang.modules" %% "scala-xml" % "1.1.0",
+  "com.github.pathikrit" %% "better-files" % "3.4.0",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.8.0",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.294",
+  "org.scalatest" %% "scalatest" % "3.0.5" % "test",
+  "ch.qos.logback" % "logback-classic" % "1.2.3" % "test",
   "org.iq80.leveldb" % "leveldb" % "0.10",
-  "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "0.14" % "test"
+  "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "0.17" % "test"
 )
 
 parallelExecution in Test := false

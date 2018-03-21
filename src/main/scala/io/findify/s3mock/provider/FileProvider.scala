@@ -90,11 +90,12 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     GetObjectData(file.byteArray, meta)
   }
 
-  override def putObjectMultipartStart(bucket:String, key:String):InitiateMultipartUploadResult = {
+  override def putObjectMultipartStart(bucket:String, key:String, metadata: ObjectMetadata):InitiateMultipartUploadResult = {
     val id = Math.abs(Random.nextLong()).toString
     val bucketFile = File(s"$dir/$bucket")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     File(s"$dir/.mp/$bucket/$key/$id/.keep").createIfNotExists(createParents = true)
+    metadataStore.put(bucket, key, metadata)
     logger.debug(s"starting multipart upload for s3://$bucket/$key")
     InitiateMultipartUploadResult(bucket, key, id)
   }
@@ -116,8 +117,13 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     val data = parts.fold(Array[Byte]())(_ ++ _)
     file.writeBytes(data.toIterator)
     File(s"$dir/.mp/$bucket/$key").delete()
+    val hash = file.md5
+    metadataStore.get(bucket, key).foreach {m =>
+      m.setContentMD5(hash)
+      m.setLastModified(org.joda.time.DateTime.now().toDate)
+    }
     logger.debug(s"completed multipart upload for s3://$bucket/$key")
-    CompleteMultipartUploadResult(bucket, key, file.md5)
+    CompleteMultipartUploadResult(bucket, key, hash)
   }
 
   override def copyObject(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String, newMeta: Option[ObjectMetadata] = None): CopyObjectResult = {

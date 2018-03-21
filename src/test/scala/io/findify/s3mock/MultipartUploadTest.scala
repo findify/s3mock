@@ -84,5 +84,23 @@ class MultipartUploadTest extends S3MockTest {
       exc.getStatusCode shouldBe 404
       exc.getErrorCode shouldBe "NoSuchBucket"
     }
+
+    it should "upload multipart with metadata" in {
+      s3.createBucket("getput")
+      val metadata: ObjectMetadata = new ObjectMetadata()
+      metadata.setContentType("application/json")
+      metadata.addUserMetadata("metamaic", "maic")
+      val init = s3.initiateMultipartUpload(new InitiateMultipartUploadRequest("getput", "foo4", metadata))
+      val p1 = s3.uploadPart(new UploadPartRequest().withBucketName("getput").withPartSize(10).withKey("foo4").withPartNumber(1).withUploadId(init.getUploadId).withInputStream(new ByteArrayInputStream("hellohello".getBytes())))
+      val p2 = s3.uploadPart(new UploadPartRequest().withBucketName("getput").withPartSize(10).withKey("foo4").withPartNumber(2).withUploadId(init.getUploadId).withInputStream(new ByteArrayInputStream("worldworld".getBytes())))
+      val result = s3.completeMultipartUpload(new CompleteMultipartUploadRequest("getput", "foo4", init.getUploadId, List(p1.getPartETag, p2.getPartETag).asJava))
+      result.getKey shouldBe "foo4"
+      val s3Object = s3.getObject("getput", "foo4")
+      getContent(s3Object) shouldBe "hellohelloworldworld"
+
+      val actualMetadata: ObjectMetadata = s3Object.getObjectMetadata
+      actualMetadata.getContentType shouldBe "application/json"
+      actualMetadata.getUserMetadata.get("metamaic") shouldBe "maic"
+    }
   }
 }

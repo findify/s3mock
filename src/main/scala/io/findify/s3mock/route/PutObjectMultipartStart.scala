@@ -15,27 +15,30 @@ import scala.util.{Failure, Success, Try}
   */
 case class PutObjectMultipartStart(implicit provider:Provider) extends LazyLogging {
   def route(bucket:String, path:String) = post {
-    parameter('uploads) { mp =>
-      complete {
-        logger.info(s"multipart upload start to $bucket/$path")
-        Try(provider.putObjectMultipartStart(bucket, path)) match {
-          case Success(result) =>
-            HttpResponse(
-              StatusCodes.OK,
-              entity = HttpEntity(
-                ContentTypes.`application/octet-stream`, result.toXML.toString().getBytes(StandardCharsets.UTF_8)
+    extractRequest { request =>
+      parameter('uploads) { mp =>
+        complete {
+          val metadata = MetadataUtil.populateObjectMetadata(request)
+          logger.info(s"multipart upload start to $bucket/$path")
+          Try(provider.putObjectMultipartStart(bucket, path, metadata)) match {
+            case Success(result) =>
+              HttpResponse(
+                StatusCodes.OK,
+                entity = HttpEntity(
+                  ContentTypes.`application/octet-stream`, result.toXML.toString().getBytes(StandardCharsets.UTF_8)
+                )
               )
-            )
-          case Failure(e: NoSuchBucketException) =>
-            HttpResponse(
-              StatusCodes.NotFound,
-              entity = e.toXML.toString()
-            )
-          case Failure(t) =>
-            HttpResponse(
-              StatusCodes.InternalServerError,
-              entity = InternalErrorException(t).toXML.toString()
-            )
+            case Failure(e: NoSuchBucketException) =>
+              HttpResponse(
+                StatusCodes.NotFound,
+                entity = e.toXML.toString()
+              )
+            case Failure(t) =>
+              HttpResponse(
+                StatusCodes.InternalServerError,
+                entity = InternalErrorException(t).toXML.toString()
+              )
+          }
         }
       }
     }

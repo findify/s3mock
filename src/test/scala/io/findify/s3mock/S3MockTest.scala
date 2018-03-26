@@ -88,9 +88,11 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
       "akka.stream.alpakka.s3.proxy.port" -> port,
       "akka.stream.alpakka.s3.proxy.secure" -> false,
       "akka.stream.alpakka.s3.path-style-access" -> true,
-      "akka.stream.alpakka.s3.aws.access-key-id" -> "foo",
-      "akka.stream.alpakka.s3.aws.secret-access-key" -> "bar",
-      "akka.stream.alpakka.s3.aws.default-region" -> "us-east-1",
+      "akka.stream.alpakka.s3.aws.credentials.provider" -> "static",
+      "akka.stream.alpakka.s3.aws.credentials.access-key-id" -> "foo",
+      "akka.stream.alpakka.s3.aws.credentials.secret-access-key" -> "bar",
+      "akka.stream.alpakka.s3.aws.region.provider" -> "static",
+      "akka.stream.alpakka.s3.aws.region.default-region" -> "us-east-1",
       "akka.stream.alpakka.s3.buffer" -> "memory",
       "akka.stream.alpakka.s3.disk-buffer-path" -> ""
     ).asJava)

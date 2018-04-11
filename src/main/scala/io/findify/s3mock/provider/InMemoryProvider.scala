@@ -1,7 +1,6 @@
 package io.findify.s3mock.provider
 
-import java.time.Instant
-import java.util.{Date, UUID}
+import java.util.UUID
 
 import akka.http.scaladsl.model.DateTime
 import com.amazonaws.services.s3.model.ObjectMetadata
@@ -14,13 +13,12 @@ import org.apache.commons.codec.digest.DigestUtils
 
 import scala.collection.concurrent.TrieMap
 import scala.collection.mutable
-import scala.collection.parallel.mutable.{ParHashSet, ParSet}
 import scala.util.Random
 
 class InMemoryProvider extends Provider with LazyLogging {
   private val mdStore = new InMemoryMetadataStore
   private val bucketDataStore = new TrieMap[String, BucketContents]
-  private val multipartTempStore = new TrieMap[String, ParSet[MultipartChunk]]
+  private val multipartTempStore = new TrieMap[String, TrieMap[Int, MultipartChunk]]
 
   private case class BucketContents(creationTime: DateTime, keysInBucket: mutable.Map[String, KeyContents])
 
@@ -106,7 +104,7 @@ class InMemoryProvider extends Provider with LazyLogging {
     bucketDataStore.get(bucket) match {
       case Some(_) =>
         val id = Math.abs(Random.nextLong()).toString
-        multipartTempStore.putIfAbsent(id, new ParHashSet[MultipartChunk])
+        multipartTempStore.putIfAbsent(id, new TrieMap[Int, MultipartChunk])
         metadataStore.put(bucket, key, metadata)
         logger.debug(s"starting multipart upload for s3://$bucket/$key")
         InitiateMultipartUploadResult(bucket, key, id)
@@ -118,7 +116,7 @@ class InMemoryProvider extends Provider with LazyLogging {
     bucketDataStore.get(bucket) match {
       case Some(_) =>
         logger.debug(s"uploading multipart chunk $partNumber for s3://$bucket/$key")
-        multipartTempStore.getOrElseUpdate(uploadId, new ParHashSet[MultipartChunk])+= MultipartChunk(partNumber, data)
+        multipartTempStore.getOrElseUpdate(uploadId, new TrieMap[Int, MultipartChunk]).put(partNumber, MultipartChunk(partNumber, data));
       case None => throw NoSuchBucketException(bucket)
     }
   }
@@ -126,7 +124,7 @@ class InMemoryProvider extends Provider with LazyLogging {
   override def putObjectMultipartComplete(bucket: String, key: String, uploadId: String, request: CompleteMultipartUpload): CompleteMultipartUploadResult = {
     bucketDataStore.get(bucket) match {
       case Some(bucketContent) =>
-        val completeBytes = multipartTempStore(uploadId).toList.sorted.map(_.data).fold(Array[Byte]())(_ ++ _)
+        val completeBytes = multipartTempStore(uploadId).values.toList.sorted.map(_.data).fold(Array[Byte]())(_ ++ _)
         bucketContent.keysInBucket.put(key, KeyContents(DateTime.now, completeBytes))
         multipartTempStore.remove(uploadId)
         logger.debug(s"completed multipart upload for s3://$bucket/$key")

@@ -34,8 +34,9 @@ class DeleteTest extends S3MockTest {
       s3.listObjects("delobj", "somefile").getObjectSummaries.asScala.exists(_.getKey == "somefile") shouldBe false
     }
 
-    it should "return 404 for non-existent keys when deleting" in {
-      Try(s3.deleteObject("nodel", "xxx")).isFailure shouldBe true
+    it should "do nothing for non-existing keys when deleting" in {
+      s3.createBucket("nodel")
+      Try(s3.deleteObject("nodel", "xxx")).isSuccess shouldBe true
     }
 
     it should "produce NoSuchBucket if bucket does not exist when deleting" in {

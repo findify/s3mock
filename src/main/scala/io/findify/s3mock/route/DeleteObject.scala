@@ -18,9 +18,6 @@ case class DeleteObject(implicit provider: Provider) extends LazyLogging {
         case Success(_) =>
           logger.info(s"deleted object $bucket/$path")
           HttpResponse(StatusCodes.NoContent)
-        case Failure(NoSuchKeyException(_, _)) =>
-          logger.info(s"cannot delete object $bucket/$path: no such key")
-          HttpResponse(StatusCodes.NotFound)
         case Failure(ex) =>
           logger.error(s"cannot delete object $bucket/$path", ex)
           HttpResponse(StatusCodes.NotFound)

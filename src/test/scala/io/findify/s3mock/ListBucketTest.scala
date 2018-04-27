@@ -204,5 +204,22 @@ class ListBucketTest extends S3MockTest {
       val list = s3.listObjects("list10").getObjectSummaries.asScala.toList
       list.find(_.getKey == "foo").map(_.getLastModified.after(DateTime.now().minusMinutes(1).toDate)) shouldBe Some(true)
     }
+
+    it should "return non empty list if prefix is correct for objects with leading slash" in {
+      s3.createBucket("test")
+      s3.putObject("test", "/one/foo1", "xxx")
+      s3.putObject("test", "/one/foo2", "xxx")
+      s3.putObject("test", "/one/foo3", "xxx")
+      s3.getObject("test", "/one/foo1")
+      s3.listObjects("test", "/one").getObjectSummaries.asScala.isEmpty shouldBe false
+    }
+
+    it should "return empty list if prefix is incorrect for objects with leading slash" in {
+      s3.createBucket("test")
+      s3.putObject("test", "/one/foo1", "xxx")
+      s3.putObject("test", "/one/foo2", "xxx")
+      s3.putObject("test", "/one/foo3", "xxx")
+      s3.listObjects("test", "%2Fone").getObjectSummaries.asScala.isEmpty shouldBe true
+    }
   }
 }

@@ -45,10 +45,15 @@ class InMemoryProvider extends Provider with LazyLogging {
       }
     }
 
+    def leadingSlash(prefix: String)(key: String): Boolean = {
+      if(key.startsWith("%2F")) ("/" + key.drop(3)).startsWith(prefix)
+      else key.startsWith(prefix)
+    }
+
     val prefix2 = prefix.getOrElse("")
     bucketDataStore.get(bucket) match {
       case Some(bucketContent) =>
-        val matchingKeys = bucketContent.keysInBucket.filterKeys(_.startsWith(prefix2))
+        val matchingKeys = bucketContent.keysInBucket.filterKeys(leadingSlash(prefix2))
         val matchResults = matchingKeys map { case (name, content) =>
           Content(name, content.lastModificationTime, DigestUtils.md5Hex(content.data), content.data.length, "STANDARD")
         }

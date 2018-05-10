@@ -7,12 +7,17 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
 import akka.stream.ActorMaterializer
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
+import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model._
 import com.amazonaws.util.IOUtils
 
 import scala.collection.JavaConversions._
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.io.Source
 import scala.util.{Random, Try}
 
 /**
@@ -160,6 +165,19 @@ class GetPutObjectTest extends S3MockTest {
       s3.putObject("concurrent", "file/name", "contents")
       val results = Range(1, 100).par.map(_ => IOUtils.toString(s3.getObject("concurrent", "file/name").getObjectContent)).toList
       results.forall(_ == "contents") shouldBe true
+    }
+
+    it should "be able to upload files in a single chunk when providing authentication" in {
+      val s3c = AmazonS3ClientBuilder
+        .standard
+        .disableChunkedEncoding
+        .withPathStyleAccessEnabled(true)
+        .withEndpointConfiguration(new EndpointConfiguration(s"http://127.0.0.1:$port", "us-east-1"))
+        .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("foo", "bar")))
+        .build
+      s3c.putObject("getput", "foo3", "bar3")
+      val result = Source.fromInputStream(s3c.getObject("getput", "foo3").getObjectContent, "UTF-8").mkString
+      result shouldBe "bar3"
     }
   }
 

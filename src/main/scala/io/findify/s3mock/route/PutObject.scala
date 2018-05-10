@@ -32,10 +32,15 @@ case class PutObject(implicit provider:Provider, mat:Materializer) extends LazyL
   def completeSigned(bucket:String, path:String) = extractRequest { request =>
     complete {
 
-
       logger.info(s"put object $bucket/$path (signed)")
-      val result = request.entity.dataBytes
-        .via(new S3ChunkedProtocolStage)
+      val dataBytes = request.entity.dataBytes
+      val maybeChunckedStream = request.headers
+        .find(_.lowercaseName() == "x-amz-content-sha256")
+        .map(_.value)
+        .filter(_.equals("STREAMING-AWS4-HMAC-SHA256-PAYLOAD"))
+        .map(_ => dataBytes.via(new S3ChunkedProtocolStage))
+      val result = maybeChunckedStream
+        .getOrElse(dataBytes)
         .fold(ByteString(""))(_ ++ _)
         .map(data => {
           val bytes = data.toArray

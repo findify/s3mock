@@ -53,7 +53,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
       Content(fromOs(f.toString).drop(bucketFileString.length+1).dropWhile(_ == '/'), DateTime(f.lastModifiedTime.toEpochMilli), md5, f.size, "STANDARD")
     }).toList
     logger.debug(s"listing bucket contents: ${files.map(_.key)}")
-    val commonPrefixes = delimiter match {
+    val commonPrefixes = normalizeDelimiter(delimiter) match {
       case Some(del) => files.flatMap(f => commonPrefix(f.key, prefixNoLeadingSlash, del)).distinct.sorted
       case None => Nil
     }

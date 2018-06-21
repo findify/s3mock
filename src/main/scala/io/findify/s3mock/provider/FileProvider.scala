@@ -82,7 +82,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   override def getObject(bucket:String, key:String): GetObjectData = {
     val bucketFile = File(s"$dir/$bucket")
     val file = File(s"$dir/$bucket/$key")
-    logger.debug(s"reading object for s://$bucket/$key")
+    logger.debug(s"reading object for s3://$bucket/$key")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     if (!file.exists) throw NoSuchKeyException(bucket, key)
     if (file.isDirectory) throw NoSuchKeyException(bucket, key)

@@ -4,6 +4,8 @@ import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import com.amazonaws.services.s3.model.AmazonS3Exception
+import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAccessor
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -19,14 +21,26 @@ class GetObjectTest extends AWSCliTest {
       s3.createBucket("awscli-lm")
       s3.putObject("awscli-lm", "foo", "bar")
       val response = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.GET, uri = s"http://127.0.0.1:$port/awscli-lm/foo")), 10.seconds)
-      response.headers.find(_.is("last-modified")).map(_.value()) shouldBe Some("Thu, 01 Jan 1970 00:00:00 GMT")
+      val last_modified = response.headers
+        .find(_.is("last-modified"))
+        .map(h => DateTimeFormatter.RFC_1123_DATE_TIME.parse(h.value()))
+        .get
+
+      // Timestamp changes everytime we run the test. We can not check the value
+      last_modified shouldBe a[TemporalAccessor]
       response.entity.contentLengthOption shouldBe Some(3)
     }
     it should "deal with HEAD requests with AWS CLI" in {
       s3.createBucket("awscli-head")
       s3.putObject("awscli-head", "foo2", "bar")
       val response = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.HEAD, uri = s"http://127.0.0.1:$port/awscli-head/foo2")), 10.seconds)
-      response.headers.find(_.is("last-modified")).map(_.value()) shouldBe Some("Thu, 01 Jan 1970 00:00:00 GMT")
+      val last_modified = response.headers
+        .find(_.is("last-modified"))
+        .map(h => DateTimeFormatter.RFC_1123_DATE_TIME.parse(h.value()))
+        .get
+
+      // Timestamp changes everytime we run the test. We can not check the value
+      last_modified shouldBe a[TemporalAccessor]
       response.entity.contentLengthOption shouldBe Some(3)
       Await.result(response.entity.dataBytes.fold(ByteString(""))(_ ++ _).runWith(Sink.head), 10.seconds).utf8String shouldBe ""
     }

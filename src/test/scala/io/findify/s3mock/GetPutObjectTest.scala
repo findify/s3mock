@@ -70,6 +70,7 @@ class GetPutObjectTest extends S3MockTest {
       tagMap.get("key1") shouldBe "val1"
       tagMap.get("key=&interesting") shouldBe "value=something&stragne"
     }
+
     it should "be OK with retrieving tags for un-tagged objects" in {
       s3.putObject("tbucket", "taggedobj", "some-content")
       var tagging = s3.getObjectTagging(new GetObjectTaggingRequest("tbucket", "taggedobj")).getTagSet

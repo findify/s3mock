@@ -4,10 +4,11 @@ import java.time.Instant
 import java.util.{Date, UUID}
 
 import akka.http.scaladsl.model.DateTime
-import com.amazonaws.services.s3.model.ObjectMetadata
+import com.amazonaws.services.s3.model.{ObjectMetadata, Tag}
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.{NoSuchBucketException, NoSuchKeyException}
 import io.findify.s3mock.provider.metadata.{InMemoryMetadataStore, MetadataStore}
+import io.findify.s3mock.provider.tags.InMemoryTagStore
 import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
 import io.findify.s3mock.response._
 import org.apache.commons.codec.digest.DigestUtils
@@ -17,9 +18,11 @@ import scala.collection.mutable
 import scala.util.Random
 
 class InMemoryProvider extends Provider with LazyLogging {
+
   private val mdStore = new InMemoryMetadataStore
   private val bucketDataStore = new TrieMap[String, BucketContents]
   private val multipartTempStore = new TrieMap[String, mutable.SortedSet[MultipartChunk]]
+  private val tagStore = new InMemoryTagStore
 
   private case class BucketContents(creationTime: DateTime, keysInBucket: mutable.Map[String, KeyContents])
 
@@ -186,4 +189,41 @@ class InMemoryProvider extends Provider with LazyLogging {
       case None => throw NoSuchBucketException(bucket)
     }
   }
+
+  override def deleteObjectTagging(bucket: String, key: String): Unit = {
+    bucketDataStore.get(bucket) match {
+      case Some(bucketContent) => bucketContent.keysInBucket.get(key) match {
+        case Some(keyContent) =>
+          logger.debug(s"removing tags for s://$bucket/$key")
+          tagStore.delete(bucket, key)
+        case None => throw NoSuchKeyException(bucket, key)
+      }
+      case None => throw NoSuchBucketException(bucket)
+    }
+  }
+
+  override def getObjectTagging(bucket: String, key: String): GetObjectTagging = {
+    bucketDataStore.get(bucket) match {
+      case Some(bucketContent) => bucketContent.keysInBucket.get(key) match {
+        case Some(keyContent) =>
+          logger.debug(s"reading tags for s://$bucket/$key")
+          GetObjectTagging(tagStore.get(bucket, key).getOrElse(List.empty))
+        case None => throw NoSuchKeyException(bucket, key)
+      }
+      case None => throw NoSuchBucketException(bucket)
+    }
+  }
+
+  override def setObjectTagging(bucket: String, key: String, tags: List[Tag]): Unit = {
+    bucketDataStore.get(bucket) match {
+      case Some(bucketContent) => bucketContent.keysInBucket.get(key) match {
+        case Some(keyContent) =>
+          logger.debug(s"setting tags for s://$bucket/$key")
+          tagStore.set(bucket, key, tags)
+        case None => throw NoSuchKeyException(bucket, key)
+      }
+      case None => throw NoSuchBucketException(bucket)
+    }
+  }
+
 }

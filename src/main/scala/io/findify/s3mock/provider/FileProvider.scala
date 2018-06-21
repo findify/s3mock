@@ -1,14 +1,15 @@
 package io.findify.s3mock.provider
+import java.io.{FileInputStream, File ⇒ JFile}
 import java.util.UUID
-import java.io.{FileInputStream, File => JFile}
 
 import akka.http.scaladsl.model.DateTime
 import better.files.File
 import better.files.File.OpenOptions
-import com.amazonaws.services.s3.model.ObjectMetadata
+import com.amazonaws.services.s3.model.{ObjectMetadata, Tag}
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.{NoSuchBucketException, NoSuchKeyException}
 import io.findify.s3mock.provider.metadata.{MapMetadataStore, MetadataStore}
+import io.findify.s3mock.provider.tags.InMemoryTagStore
 import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
 import io.findify.s3mock.response._
 import org.apache.commons.codec.digest.DigestUtils
@@ -23,6 +24,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   if (!workDir.exists) workDir.createDirectories()
 
   private val meta = new MapMetadataStore(dir)
+  private val tagStore = new InMemoryTagStore
 
   override def metadataStore: MetadataStore = meta
 
@@ -164,6 +166,36 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     bucketFile.delete()
     metadataStore.remove(bucket)
+  }
+
+  override def deleteObjectTagging(bucket:String, key:String): Unit = {
+    val bucketFile = File(s"$dir/$bucket")
+    val file = File(s"$dir/$bucket/$key")
+    logger.debug(s"reading object for s://$bucket/$key")
+    if (!bucketFile.exists) throw NoSuchBucketException(bucket)
+    if (!file.exists) throw NoSuchKeyException(bucket, key)
+    if (file.isDirectory) throw NoSuchKeyException(bucket, key)
+    tagStore.delete(bucket, key)
+  }
+
+  override def getObjectTagging(bucket:String, key:String): GetObjectTagging = {
+    val bucketFile = File(s"$dir/$bucket")
+    val file = File(s"$dir/$bucket/$key")
+    logger.debug(s"reading object for s://$bucket/$key")
+    if (!bucketFile.exists) throw NoSuchBucketException(bucket)
+    if (!file.exists) throw NoSuchKeyException(bucket, key)
+    if (file.isDirectory) throw NoSuchKeyException(bucket, key)
+    GetObjectTagging(tagStore.get(bucket, key).getOrElse(List.empty))
+  }
+
+  override def setObjectTagging(bucket:String, key:String, tags: List[Tag]): Unit = {
+    val bucketFile = File(s"$dir/$bucket")
+    val file = File(s"$dir/$bucket/$key")
+    logger.debug(s"reading object for s://$bucket/$key")
+    if (!bucketFile.exists) throw NoSuchBucketException(bucket)
+    if (!file.exists) throw NoSuchKeyException(bucket, key)
+    if (file.isDirectory) throw NoSuchKeyException(bucket, key)
+    tagStore.set(bucket, key, tags)
   }
 
   /** Replace the os separator with a '/' */

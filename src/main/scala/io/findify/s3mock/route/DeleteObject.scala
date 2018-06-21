@@ -13,19 +13,29 @@ import scala.util.{Failure, Success, Try}
   */
 case class DeleteObject(implicit provider: Provider) extends LazyLogging {
   def route(bucket:String, path:String) = delete {
-    complete {
-      Try(provider.deleteObject(bucket, path)) match {
-        case Success(_) =>
-          logger.info(s"deleted object $bucket/$path")
-          HttpResponse(StatusCodes.NoContent)
-        case Failure(NoSuchKeyException(_, _)) =>
-          logger.info(s"cannot delete object $bucket/$path: no such key")
-          HttpResponse(StatusCodes.NotFound)
-        case Failure(ex) =>
-          logger.error(s"cannot delete object $bucket/$path", ex)
-          HttpResponse(StatusCodes.NotFound)
+    parameter('tagging?) { (tagging) ⇒
+      tagging match {
+        case Some(_) ⇒
+          complete {
+            handleTry(bucket, path, Try(provider.deleteObjectTagging(bucket, path)))
+          }
+        case None ⇒
+          complete {
+            handleTry(bucket, path, Try(provider.deleteObject(bucket, path)))
+          }
       }
-
     }
+  }
+
+  private def handleTry[A](bucket: String, path: String, t: Try[A]) = t match {
+    case Success(_) =>
+      logger.info(s"deleted object $bucket/$path")
+      HttpResponse(StatusCodes.NoContent)
+    case Failure(NoSuchKeyException(_, _)) =>
+      logger.info(s"cannot delete object $bucket/$path: no such key")
+      HttpResponse(StatusCodes.NotFound)
+    case Failure(ex) =>
+      logger.error(s"cannot delete object $bucket/$path", ex)
+      HttpResponse(StatusCodes.NotFound)
   }
 }

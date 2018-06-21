@@ -14,6 +14,7 @@ import com.amazonaws.util.DateUtils
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.{InternalErrorException, NoSuchBucketException, NoSuchKeyException}
 import io.findify.s3mock.provider.{GetObjectData, Provider}
+import io.findify.s3mock.response.GetObjectTagging
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
@@ -38,7 +39,7 @@ case class GetObject(implicit provider: Provider) extends LazyLogging {
                 }
 
                 if (params.contains("tagging")) {
-                  handleTaggingRequest(meta)
+                  handleTaggingRequest(provider.getObjectTagging(bucket, path), meta)
                 } else {
                   HttpResponse(
                     status = StatusCodes.OK,
@@ -77,44 +78,46 @@ case class GetObject(implicit provider: Provider) extends LazyLogging {
 
 
 
-  protected def handleTaggingRequest(meta: ObjectMetadata): HttpResponse = {
+  protected def handleTaggingRequest(tagsMeta: GetObjectTagging, meta: ObjectMetadata): HttpResponse = {
     var root = <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"></Tagging>
     var tagset = <TagSet></TagSet>
 
     var w = new StringWriter()
 
-    if (meta.getRawMetadata.containsKey("x-amz-tagging")){
-      var doc =
-        <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
-          <TagSet>
-            {
-            meta.getRawMetadata.get("x-amz-tagging").asInstanceOf[String].split("&").map(
-              (rawTag: String) => {
-                rawTag.split("=", 2).map(
-                  (part: String) => URLDecoder.decode(part, "UTF-8")
-                )
-              }).map(
-              (kv: Array[String]) =>
-                <Tag>
-                  <Key>{kv(0)}</Key>
-                  <Value>{kv(1)}</Value>
-                </Tag>)
+    var doc =
+      <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+        <TagSet>
+          {
+            tagsMeta.tags.map(tag =>
+              <Tag>
+                <Key>{tag.getKey}</Key>
+                <Value>{tag.getValue}</Value>
+              </Tag>
+            )
+          }
+          {
+            if (meta.getRawMetadata.containsKey("x-amz-tagging")){
+              meta.getRawMetadata.get("x-amz-tagging").asInstanceOf[String].split("&").map(
+                (rawTag: String) => {
+                  rawTag.split("=", 2).map(
+                    (part: String) => URLDecoder.decode(part, "UTF-8")
+                  )
+                }).map(
+                (kv: Array[String]) =>
+                  <Tag>
+                    <Key>{kv(0)}</Key>
+                    <Value>{kv(1)}</Value>
+                  </Tag>)
             }
-          </TagSet>
-        </Tagging>
+          }
+        </TagSet>
+      </Tagging>
 
+    xml.XML.write(w, doc, "UTF-8", true, null)
 
-      xml.XML.write(w, doc, "UTF-8", true, null)
-    } else {
-      var doc = <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet></TagSet></Tagging>
-      xml.XML.write(w, doc, "UTF-8", true, null)
-    }
-
-    meta.setContentType("application/xml; charset=utf-8")
     HttpResponse(
       status = StatusCodes.OK,
-      entity = w.toString,
-      headers = `Last-Modified`(DateTime(1970, 1, 1)) :: metadataToHeaderList(meta)
+      entity = w.toString
     )
   }
 

@@ -1,6 +1,6 @@
 package io.findify.s3mock.provider
 
-import com.amazonaws.services.s3.model.ObjectMetadata
+import com.amazonaws.services.s3.model.{CompleteMultipartUploadResult ⇒ _, CopyObjectResult ⇒ _, InitiateMultipartUploadResult ⇒ _, _}
 import io.findify.s3mock.provider.metadata.MetadataStore
 import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
 import io.findify.s3mock.response._
@@ -25,6 +25,11 @@ trait Provider {
   def deleteBucket(bucket:String):Unit
   def copyObject(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String, newMeta: Option[ObjectMetadata] = None): CopyObjectResult
   def copyObjectMultipart(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String,  partNumber:Int, uploadId:String, fromByte: Int, toByte:Int,  meta: Option[ObjectMetadata] = None): CopyObjectResult
+
+  def deleteObjectTagging(bucket:String, key:String): Unit
+  def getObjectTagging(bucket:String, key:String): GetObjectTagging
+  def setObjectTagging(bucket:String, key:String, tags: List[Tag]): Unit
+
 }
 
 

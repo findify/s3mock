@@ -1,5 +1,6 @@
 package io.findify.s3mock.route
 
+import akka.event.Logging
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.stream.Materializer
@@ -20,7 +21,7 @@ import scala.util.{Failure, Success, Try}
 case class PutObject(implicit provider:Provider, mat:Materializer) extends LazyLogging {
   def route(bucket:String, path:String) = put {
     extractRequest { request =>
-      headerValueByName("authorization") { auth =>
+      headerValueByName("x-amz-decoded-content-length") { _ =>
         completeSigned(bucket, path)
       } ~ completePlain(bucket, path)
     }

@@ -1,6 +1,5 @@
 package io.findify.s3mock.route
 
-import akka.event.Logging
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.stream.Materializer

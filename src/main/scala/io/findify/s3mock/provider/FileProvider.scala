@@ -43,7 +43,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     val bucketFile = File(s"$dir/$bucket/")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     val bucketFileString = fromOs(bucketFile.toString)
-    val bucketFiles = bucketFile.listRecursively.filter(f => {
+    val bucketFiles = bucketFile.listRecursively(File.VisitOptions.follow).filter(f => {
         val fString = fromOs(f.toString).drop(bucketFileString.length).dropWhile(_ == '/')
         fString.startsWith(prefixNoLeadingSlash) && !f.isDirectory
       })

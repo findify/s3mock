@@ -31,7 +31,7 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
   private val fileSystem = ActorSystem.create("testfile", fileSystemConfig)
   private val fileMat = ActorMaterializer()(fileSystem)
   private val fileBasedS3 = clientFor("localhost", fileBasedPort)
-  private val fileBasedServer = new S3Mock(fileBasedPort, new FileProvider(workDir))
+  private val fileBasedServer = new S3Mock(fileBasedPort, new FileProvider(workDir), "0.0.0.0")
   private val fileBasedTransferManager: TransferManager = TransferManagerBuilder.standard().withS3Client(fileBasedS3).build()
   private val fileBasedAlpakkaClient = new S3Client(S3Settings(fileSystemConfig))(fileSystem, fileMat)
 
@@ -40,17 +40,18 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
   private val inMemorySystem = ActorSystem.create("testram", inMemoryConfig)
   private val inMemoryMat = ActorMaterializer()(inMemorySystem)
   private val inMemoryS3 = clientFor("localhost", inMemoryPort)
-  private val inMemoryServer = new S3Mock(inMemoryPort, new InMemoryProvider)
+  private val inMemoryServer = new S3Mock(inMemoryPort, new InMemoryProvider, "0.0.0.0")
   private val inMemoryTransferManager: TransferManager = TransferManagerBuilder.standard().withS3Client(inMemoryS3).build()
   private val inMemoryBasedAlpakkaClient = new S3Client(S3Settings(inMemoryConfig))(inMemorySystem, inMemoryMat)
 
   case class Fixture(server: S3Mock, client: AmazonS3, tm: TransferManager, name: String, port: Int, alpakka: S3Client, system: ActorSystem, mat: Materializer)
+
   val fixtures = List(
     Fixture(fileBasedServer, fileBasedS3, fileBasedTransferManager, "file based S3Mock", fileBasedPort, fileBasedAlpakkaClient, fileSystem, fileMat),
     Fixture(inMemoryServer, inMemoryS3, inMemoryTransferManager, "in-memory S3Mock", inMemoryPort, inMemoryBasedAlpakkaClient, inMemorySystem, inMemoryMat)
   )
 
-  def behaviour(fixture: => Fixture) : Unit
+  def behaviour(fixture: => Fixture): Unit
 
   for (fixture <- fixtures) {
     fixture.name should behave like behaviour(fixture)
@@ -62,6 +63,7 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
     inMemoryServer.start
     super.beforeAll
   }
+
   override def afterAll = {
     super.afterAll
     inMemoryServer.stop
@@ -71,6 +73,7 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
     Await.result(inMemorySystem.terminate(), Duration.Inf)
     File(workDir).delete()
   }
+
   def getContent(s3Object: S3Object): String = Source.fromInputStream(s3Object.getObjectContent, "UTF-8").mkString
 
   def clientFor(host: String, port: Int): AmazonS3 = {

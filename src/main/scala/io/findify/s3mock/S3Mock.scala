@@ -19,7 +19,7 @@ import scala.concurrent.duration.Duration
   * @param system actor system to use. By default, create an own one.
   */
 class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSystem.create("s3mock")) extends LazyLogging {
-  implicit val p = provider
+  implicit val p: Provider = provider
   private var bind:Http.ServerBinding = _
 
   def start = {

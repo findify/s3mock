@@ -26,7 +26,7 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.8" % "test",
   "ch.qos.logback" % "logback-classic" % "1.2.3" % "test",
   "org.iq80.leveldb" % "leveldb" % "0.12",
-  "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "0.20" % "test",
+  "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "1.1.0" % "test",
   "javax.xml.bind" % "jaxb-api" % "2.3.1",
   "com.sun.xml.bind" % "jaxb-core" % "2.3.0.1",
   "com.sun.xml.bind" % "jaxb-impl" % "2.3.2",
@@ -77,6 +77,7 @@ imageNames in docker := Seq(
 
 scalafixDependencies in ThisBuild += "org.scala-lang.modules" %% "scala-collection-migrations" % "2.0.0"
 addCompilerPlugin(scalafixSemanticdb)
+scalacOptions ++= scalafixScalacOptions.value // add this line
 scalacOptions ++= Seq(
   "-language:postfixOps",
   "-Ywarn-unused",

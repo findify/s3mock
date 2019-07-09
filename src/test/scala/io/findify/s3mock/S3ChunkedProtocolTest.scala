@@ -12,8 +12,8 @@ import scala.concurrent.Await
   * Created by shutty on 8/11/16.
   */
 class S3ChunkedProtocolTest extends FlatSpec with Matchers {
-  implicit val system = ActorSystem.create("test")
-  implicit val mat = ActorMaterializer()
+  implicit val system: ActorSystem = ActorSystem.create("test")
+  implicit val mat: ActorMaterializer = ActorMaterializer()
 
   "s3 chunk protocol" should "work with simple ins" in {
     val in = "3;chunk-signature=1234567890123456789012345678901234567890123456789012345678901234\r\nfoo\r\n3;chunk-signature=1234567890123456789012345678901234567890123456789012345678901234\r\nbar\r\n".grouped(10).map(ByteString(_)).toList

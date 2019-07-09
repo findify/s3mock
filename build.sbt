@@ -1,13 +1,13 @@
 name := "s3mock"
 
-version := "0.2.6-snapshot"
+version := "0.2.6-SNAPSHOT"
 
 organization := "io.findify"
 
 //scalaVersion := "2.13.0"
 scalaVersion := "2.12.8"
 
-crossScalaVersions := Seq("2.11.11", "2.12.8")
+crossScalaVersions := Seq("2.11.11", "2.12.8", "2.13.0")
 
 val akkaVersion = "2.5.23"
 
@@ -75,14 +75,13 @@ imageNames in docker := Seq(
   ImageName(s"findify/s3mock:latest")
 )
 
-scalafixDependencies in ThisBuild += "org.scala-lang.modules" %% "scala-collection-migrations" % "2.0.0"
-addCompilerPlugin(scalafixSemanticdb)
-scalacOptions ++= scalafixScalacOptions.value // add this line
+//scalafixDependencies in ThisBuild += "org.scala-lang.modules" %% "scala-collection-migrations" % "2.0.0"
+//addCompilerPlugin(scalafixSemanticdb)
 scalacOptions ++= Seq(
   "-language:postfixOps",
   "-Ywarn-unused",
   "-Yrangepos", 
-  "-P:semanticdb:synthetics:on"
+  //"-P:semanticdb:synthetics:on"
 )
 
 /*enablePlugins(JavaAppPackaging)

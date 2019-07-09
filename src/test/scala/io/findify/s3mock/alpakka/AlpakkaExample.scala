@@ -1,13 +1,16 @@
 package io.findify.s3mock.alpakka
 
+import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.alpakka.s3.scaladsl.S3Client
-import akka.stream.scaladsl.Sink
+import akka.stream.alpakka.s3.ObjectMetadata
+import akka.stream.alpakka.s3.scaladsl.{S3}
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 
 import scala.collection.JavaConverters._
+import scala.concurrent.Future
 
 object AlpakkaExample {
   def main(args: Array[String]): Unit = {
@@ -25,7 +28,10 @@ object AlpakkaExample {
     implicit val system = ActorSystem.create("test", config)
     implicit val mat = ActorMaterializer()
     import system.dispatcher
-    val s3a = S3Client()
-    s3a.download("bucket", "key")._1.runWith(Sink.reduce[ByteString](_ ++ _)).map(_.utf8String)
+
+    val ddd: Source[Option[(Source[ByteString, NotUsed], ObjectMetadata)], NotUsed] = S3.download("bucket", "key").withAttributes()
+    //val s3a = S3Client()
+    val asdf: Future[Option[(Source[ByteString, NotUsed], ObjectMetadata)]] = ddd.runWith(Sink.head)
+    val bbb: Future[Option[Future[ByteString]]] = asdf.map((l: Option[(Source[ByteString, NotUsed], ObjectMetadata)]) => l.map(b => b._1.runWith(Sink.head)))
   }
 }

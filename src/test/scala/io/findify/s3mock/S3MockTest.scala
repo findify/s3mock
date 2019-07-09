@@ -3,8 +3,7 @@ package io.findify.s3mock
 import akka.actor.ActorSystem
 import akka.stream.alpakka.s3.S3Settings
 import akka.stream.{ActorMaterializer, Materializer}
-//import akka.stream.alpakka.s3.scaladsl.{S3, S3Client}
-import akka.stream.alpakka.s3.scaladsl.{S3Client}
+import akka.stream.alpakka.s3.scaladsl.S3
 import better.files.File
 import com.amazonaws.auth.{AWSStaticCredentialsProvider, AnonymousAWSCredentials}
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
@@ -33,7 +32,8 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
   private val fileBasedS3 = clientFor("localhost", fileBasedPort)
   private val fileBasedServer = new S3Mock(fileBasedPort, new FileProvider(workDir))
   private val fileBasedTransferManager: TransferManager = TransferManagerBuilder.standard().withS3Client(fileBasedS3).build()
-  private val fileBasedAlpakkaClient: S3Client = new S3Client(S3Settings(fileSystemConfig))(fileSystem, fileMat)
+  //  private val fileBasedAlpakkaClient: S3Client = new S3Client(S3Settings(fileSystemConfig))(fileSystem, fileMat)
+  private val fileBasedAlpakkaClient= S3
 
   private val inMemoryPort = 8002
   private val inMemoryConfig = configFor("localhost", inMemoryPort)
@@ -42,9 +42,10 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
   private val inMemoryS3 = clientFor("localhost", inMemoryPort)
   private val inMemoryServer = new S3Mock(inMemoryPort, new InMemoryProvider)
   private val inMemoryTransferManager: TransferManager = TransferManagerBuilder.standard().withS3Client(inMemoryS3).build()
-  private val inMemoryBasedAlpakkaClient: S3Client = new S3Client(S3Settings(inMemoryConfig))(inMemorySystem, inMemoryMat)
+  //  private val inMemoryBasedAlpakkaClient: S3Client = new S3Client(S3Settings(inMemoryConfig))(inMemorySystem, inMemoryMat)
+  private val inMemoryBasedAlpakkaClient= S3
 
-  case class Fixture(server: S3Mock, client: AmazonS3, tm: TransferManager, name: String, port: Int, alpakka: S3Client, system: ActorSystem, mat: Materializer)
+  case class Fixture(server: S3Mock, client: AmazonS3, tm: TransferManager, name: String, port: Int, alpakka: S3, system: ActorSystem, mat: Materializer)
   val fixtures = List(
     Fixture(fileBasedServer, fileBasedS3, fileBasedTransferManager, "file based S3Mock", fileBasedPort, fileBasedAlpakkaClient, fileSystem, fileMat),
     Fixture(inMemoryServer, inMemoryS3, inMemoryTransferManager, "in-memory S3Mock", inMemoryPort, inMemoryBasedAlpakkaClient, inMemorySystem, inMemoryMat)

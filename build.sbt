@@ -75,8 +75,8 @@ imageNames in docker := Seq(
   ImageName(s"findify/s3mock:latest")
 )
 
+scalafixDependencies in ThisBuild += "org.scala-lang.modules" %% "scala-collection-migrations" % "2.0.0"
 addCompilerPlugin(scalafixSemanticdb)
-
 scalacOptions ++= Seq(
   "-language:postfixOps",
   "-Ywarn-unused",

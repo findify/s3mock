@@ -13,7 +13,7 @@ class PutBucketTest extends AWSCliTest {
     val s3 = fixture.client
     val port = fixture.port
     it should "create bucket with AWS CLI" in {
-      val response = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.PUT, uri = s"http://127.0.0.1:$port/awscli")), 10.seconds)
+      Await.result(http.singleRequest(HttpRequest(method = HttpMethods.PUT, uri = s"http://127.0.0.1:$port/awscli")), 10.seconds)
       s3.listBuckets().exists(_.getName == "awscli") shouldBe true
     }
   }

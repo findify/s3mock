@@ -1,7 +1,6 @@
 package io.findify.s3mock
 
 import java.util
-import java.util.Date
 
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.{AmazonS3Exception, ListObjectsRequest, ListObjectsV2Request, S3ObjectSummary}

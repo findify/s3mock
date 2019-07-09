@@ -5,7 +5,6 @@ package io.findify.s3mock
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 
-import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 class ListBucketsTest extends S3MockTest {

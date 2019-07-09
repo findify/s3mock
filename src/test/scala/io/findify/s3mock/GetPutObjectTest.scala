@@ -35,7 +35,7 @@ class GetPutObjectTest extends S3MockTest {
       implicit val mat = ActorMaterializer()
       val http = Http(system)
       if (!s3.listBuckets().exists(_.getName == "getput")) s3.createBucket("getput")
-      val response = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.POST, uri = s"http://127.0.0.1:$port/getput/foo2", entity = "bar")), 10.seconds)
+      Await.result(http.singleRequest(HttpRequest(method = HttpMethods.POST, uri = s"http://127.0.0.1:$port/getput/foo2", entity = "bar")), 10.seconds)
       getContent(s3.getObject("getput", "foo2")) shouldBe "bar"
     }
     it should "put objects in subdirs" in {
@@ -143,9 +143,9 @@ class GetPutObjectTest extends S3MockTest {
       s3.createBucket("prefix")
       s3.putObject("prefix", "some/path", "bar")
       s3.putObject("prefix", "some", "bar")
-      val noSlash = Try(s3.getObject("prefix", "some/path"))
-      val withSlash = Try(s3.getObject("prefix", "some"))
-      val br=1
+      Try(s3.getObject("prefix", "some/path"))
+      Try(s3.getObject("prefix", "some"))
+      
     }
 
     it should "have etag in metadata" in {

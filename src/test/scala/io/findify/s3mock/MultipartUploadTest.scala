@@ -1,7 +1,6 @@
 package io.findify.s3mock
 
 import java.io.ByteArrayInputStream
-import java.nio.charset.Charset
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -79,7 +78,7 @@ class MultipartUploadTest extends S3MockTest {
     it should "produce NoSuchBucket if bucket does not exist" in {
       val exc = intercept[AmazonS3Exception] {
         val init = s3.initiateMultipartUpload(new InitiateMultipartUploadRequest("aws-404", "foo4"))
-        val p1 = s3.uploadPart(new UploadPartRequest().withBucketName("aws-404").withPartSize(10).withKey("foo4").withPartNumber(1).withUploadId(init.getUploadId).withInputStream(new ByteArrayInputStream("hellohello".getBytes())))
+        s3.uploadPart(new UploadPartRequest().withBucketName("aws-404").withPartSize(10).withKey("foo4").withPartNumber(1).withUploadId(init.getUploadId).withInputStream(new ByteArrayInputStream("hellohello".getBytes())))
       }
       exc.getStatusCode shouldBe 404
       exc.getErrorCode shouldBe "NoSuchBucket"

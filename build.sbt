@@ -26,11 +26,12 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.8" % "test",
   "ch.qos.logback" % "logback-classic" % "1.2.3" % "test",
   "org.iq80.leveldb" % "leveldb" % "0.12",
-  "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "1.1.0" % "test",
+  "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "0.20" % "test",
   "javax.xml.bind" % "jaxb-api" % "2.3.1",
   "com.sun.xml.bind" % "jaxb-core" % "2.3.0.1",
   "com.sun.xml.bind" % "jaxb-impl" % "2.3.2",
-  "javax.activation" % "activation" % "1.1.1"
+  "javax.activation" % "activation" % "1.1.1",
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.0.0"
 )
 
 parallelExecution in Test := false
@@ -79,7 +80,8 @@ addCompilerPlugin(scalafixSemanticdb)
 scalacOptions ++= Seq(
   "-language:postfixOps",
   "-Ywarn-unused",
-  "-Yrangepos"
+  "-Yrangepos", 
+  "-P:semanticdb:synthetics:on"
 )
 
 /*enablePlugins(JavaAppPackaging)

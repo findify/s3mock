@@ -60,7 +60,7 @@ class DeleteTest extends S3MockTest {
       s3.createBucket("delobj3")
       s3.putObject("delobj3", "some/path/foo1", "foo1")
       s3.putObject("delobj3", "some/path/foo2", "foo2")
-      val del = s3.deleteObject("delobj3", "some/path")
+      s3.deleteObject("delobj3", "some/path")
       s3.listObjects("delobj3", "some/path/").getObjectSummaries.size() shouldBe 2
     }
 
@@ -70,7 +70,7 @@ class DeleteTest extends S3MockTest {
       s3.putObject("owntracks", "data/2017-07-31/10:34.json", "foo")
       s3.putObject("owntracks", "data/2017-07-31/16:23.json", "bar")
       val requestData = """<?xml version="1.0" encoding="UTF-8"?><Delete xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Object><Key>data/2017-07-31/10:34.json</Key></Object><Object><Key>data/2017-07-31/16:23.json</Key></Object></Delete>"""
-      val response = Await.result(Http(fixture.system).singleRequest(HttpRequest(
+      Await.result(Http(fixture.system).singleRequest(HttpRequest(
         method = HttpMethods.POST,
         uri = s"http://localhost:${fixture.port}/owntracks?delete",
         entity = HttpEntity(ContentType(MediaTypes.`application/xml`, HttpCharsets.`UTF-8`), requestData)

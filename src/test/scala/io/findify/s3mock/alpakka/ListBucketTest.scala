@@ -1,7 +1,6 @@
 package io.findify.s3mock.alpakka
 
 import akka.stream.scaladsl.Sink
-import akka.util.ByteString
 import io.findify.s3mock.S3MockTest
 import scala.concurrent.duration._
 import scala.concurrent.Await

@@ -3,11 +3,12 @@ package io.findify.s3mock
 import akka.actor.ActorSystem
 import akka.stream.alpakka.s3.S3Settings
 import akka.stream.{ActorMaterializer, Materializer}
-import akka.stream.alpakka.s3.scaladsl.{S3, S3Client}
+//import akka.stream.alpakka.s3.scaladsl.{S3, S3Client}
+import akka.stream.alpakka.s3.scaladsl.{S3Client}
 import better.files.File
-import com.amazonaws.auth.{AWSStaticCredentialsProvider, AnonymousAWSCredentials, BasicAWSCredentials, DefaultAWSCredentialsProviderChain}
+import com.amazonaws.auth.{AWSStaticCredentialsProvider, AnonymousAWSCredentials}
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
-import com.amazonaws.services.s3.{AmazonS3, AmazonS3Client, AmazonS3ClientBuilder}
+import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.amazonaws.services.s3.model.S3Object
 import com.amazonaws.services.s3.transfer.{TransferManager, TransferManagerBuilder}
 import com.typesafe.config.{Config, ConfigFactory}
@@ -33,7 +34,6 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
   private val fileBasedServer = new S3Mock(fileBasedPort, new FileProvider(workDir))
   private val fileBasedTransferManager: TransferManager = TransferManagerBuilder.standard().withS3Client(fileBasedS3).build()
   private val fileBasedAlpakkaClient: S3Client = new S3Client(S3Settings(fileSystemConfig))(fileSystem, fileMat)
-  S3
 
   private val inMemoryPort = 8002
   private val inMemoryConfig = configFor("localhost", inMemoryPort)

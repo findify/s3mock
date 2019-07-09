@@ -1,7 +1,7 @@
 package io.findify.s3mock.route
 
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.Directives.{path, _}
+import akka.http.scaladsl.server.Directives._
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.NoSuchKeyException
 import io.findify.s3mock.provider.Provider
@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by shutty on 3/13/17.
   */
-case class DeleteObjects (implicit provider: Provider) extends LazyLogging {
+case class DeleteObjects()(implicit provider: Provider) extends LazyLogging {
   def route(bucket:String) = post {
     parameter('delete) { d =>
       entity(as[String]) { xml => {

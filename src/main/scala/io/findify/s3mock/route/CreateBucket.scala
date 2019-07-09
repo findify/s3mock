@@ -10,7 +10,7 @@ import io.findify.s3mock.request.CreateBucketConfiguration
 /**
   * Created by shutty on 8/19/16.
   */
-case class CreateBucket(implicit provider:Provider) extends LazyLogging {
+case class CreateBucket()(implicit provider:Provider) extends LazyLogging {
   def route(bucket:String) = put {
     entity(as[String]) { xml =>
       complete {

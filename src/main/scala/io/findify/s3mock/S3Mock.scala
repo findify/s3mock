@@ -9,7 +9,7 @@ import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.provider.{FileProvider, InMemoryProvider, Provider}
 import io.findify.s3mock.route._
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 /**
@@ -82,7 +82,7 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
       _ <- Http().shutdownAllConnectionPools()
       _ <- system.terminate()
     } yield {
-      Unit
+      ()
     }
     Await.result(stopped, Duration.Inf)
   }

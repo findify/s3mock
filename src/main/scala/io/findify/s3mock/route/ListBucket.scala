@@ -11,7 +11,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by shutty on 8/19/16.
   */
-case class ListBucket(implicit provider:Provider) extends LazyLogging {
+case class ListBucket()(implicit provider:Provider) extends LazyLogging {
   def route(bucket:String) = get {
     parameter('prefix?, 'delimiter?, Symbol("max-keys")?) { (prefix, delimiter, maxkeys) =>
       complete {

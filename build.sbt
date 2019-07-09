@@ -1,14 +1,15 @@
 name := "s3mock"
 
-version := "0.2.5"
+version := "0.2.6-snapshot"
 
 organization := "io.findify"
 
-scalaVersion := "2.12.4"
+//scalaVersion := "2.13.0"
+scalaVersion := "2.12.8"
 
-crossScalaVersions := Seq("2.11.11", "2.12.4")
+crossScalaVersions := Seq("2.11.11", "2.12.8")
 
-val akkaVersion = "2.5.11"
+val akkaVersion = "2.5.23"
 
 licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
 
@@ -16,16 +17,20 @@ homepage := Some(url("https://github.com/findify/s3mock"))
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-  "com.typesafe.akka" %% "akka-http" % "10.1.0",
+  "com.typesafe.akka" %% "akka-http" % "10.1.8",
   "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % "test",
-  "org.scala-lang.modules" %% "scala-xml" % "1.1.0",
-  "com.github.pathikrit" %% "better-files" % "3.4.0",
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.8.0",
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.294",
-  "org.scalatest" %% "scalatest" % "3.0.5" % "test",
+  "org.scala-lang.modules" %% "scala-xml" % "1.2.0",
+  "com.github.pathikrit" %% "better-files" % "3.8.0",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.588",
+  "org.scalatest" %% "scalatest" % "3.0.8" % "test",
   "ch.qos.logback" % "logback-classic" % "1.2.3" % "test",
-  "org.iq80.leveldb" % "leveldb" % "0.10",
-  "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "0.17" % "test"
+  "org.iq80.leveldb" % "leveldb" % "0.12",
+  "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "1.1.0" % "test",
+  "javax.xml.bind" % "jaxb-api" % "2.3.1",
+  "com.sun.xml.bind" % "jaxb-core" % "2.3.0.1",
+  "com.sun.xml.bind" % "jaxb-impl" % "2.3.2",
+  "javax.activation" % "activation" % "1.1.1"
 )
 
 parallelExecution in Test := false
@@ -67,6 +72,14 @@ dockerfile in docker := new Dockerfile {
 imageNames in docker := Seq(
   ImageName(s"findify/s3mock:${version.value.replaceAll("\\+", "_")}"),
   ImageName(s"findify/s3mock:latest")
+)
+
+addCompilerPlugin(scalafixSemanticdb)
+
+scalacOptions ++= Seq(
+  "-language:postfixOps",
+  "-Ywarn-unused",
+  "-Yrangepos"
 )
 
 /*enablePlugins(JavaAppPackaging)

@@ -17,7 +17,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by shutty on 8/20/16.
   */
-case class PutObject(implicit provider:Provider, mat:Materializer) extends LazyLogging {
+case class PutObject()(implicit provider:Provider, mat:Materializer) extends LazyLogging {
   def route(bucket:String, path:String) = put {
     extractRequest { request =>
       headerValueByName("authorization") { auth =>

@@ -21,7 +21,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by shutty on 8/19/16.
   */
-case class GetObject(implicit provider: Provider) extends LazyLogging {
+case class GetObject()(implicit provider: Provider) extends LazyLogging {
   def route(bucket: String, path: String, params: Map[String, String]) = get {
 
     withRangeSupport {
@@ -78,8 +78,8 @@ case class GetObject(implicit provider: Provider) extends LazyLogging {
 
 
   protected def handleTaggingRequest(meta: ObjectMetadata): HttpResponse = {
-    var root = <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"></Tagging>
-    var tagset = <TagSet></TagSet>
+    <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"></Tagging>
+    <TagSet></TagSet>
 
     var w = new StringWriter()
 

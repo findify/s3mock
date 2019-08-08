@@ -55,6 +55,7 @@ pomExtra := (
 
 enablePlugins(DockerPlugin)
 assemblyJarName in assembly := "s3mock.jar"
+assemblyShadeRules in assembly := Seq(ShadeRule.rename("com.typesafe.scalalogging.**" -> "com.typesafe.scalalogging.shaded.@1").inAll)
 mainClass in assembly := Some("io.findify.s3mock.Main")
 test in assembly := {}
 

@@ -82,7 +82,7 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
       _ <- Http().shutdownAllConnectionPools()
       _ <- system.terminate()
     } yield {
-      Unit
+      ()
     }
     Await.result(stopped, Duration.Inf)
   }

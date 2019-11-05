@@ -15,7 +15,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by shutty on 11/23/16.
   */
-case class CopyObject(implicit provider: Provider) extends LazyLogging {
+case class CopyObject()(implicit provider: Provider) extends LazyLogging {
   def split(path: String):Option[(String,String)] = {
     val noFirstSlash = path.replaceAll("^/+", "")
     val result = noFirstSlash.split("/").toList match {

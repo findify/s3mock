@@ -3,15 +3,13 @@ package io.findify.s3mock.alpakka
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.headers.ByteRange
 import akka.stream.ActorMaterializer
-import akka.stream.alpakka.s3.auth.AWSCredentials
-import akka.stream.alpakka.s3.scaladsl.S3Client
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import io.findify.s3mock.S3MockTest
 
 import scala.concurrent.duration._
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.Await
 
 /**

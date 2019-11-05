@@ -4,8 +4,9 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.alpakka.s3.scaladsl.S3
 import akka.stream.scaladsl.Sink
-import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
+
+import scala.concurrent.Future
 import scala.jdk.CollectionConverters._
 
 object AlpakkaExample {
@@ -24,6 +25,7 @@ object AlpakkaExample {
     implicit val system = ActorSystem.create("test", config)
     implicit val mat = ActorMaterializer()
     import system.dispatcher
-    val contents = S3.download("bucket", "key")._1.runWith(Sink.reduce[ByteString](_ ++ _)).map(_.utf8String)
+    val posibleSource = S3.download("bucket", "key").runWith(Sink.head)
+    val contents = posibleSource.flatMap( obj => obj.map( content => content._1.runWith(Sink.head).map(_.utf8String)).getOrElse(Future.successful("")))
   }
 }

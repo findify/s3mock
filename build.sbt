@@ -6,7 +6,7 @@ organization := "com.hiya"
 
 scalaVersion := "2.12.8"
 
-crossScalaVersions := Seq("2.11.12", "2.12.4", "2.13.1")
+crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.1")
 
 val akkaVersion = "2.5.11"
 

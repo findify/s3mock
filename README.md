@@ -1,8 +1,5 @@
 # S3 mock library for Java/Scala
 
-[![Build Status](https://travis-ci.org/findify/s3mock.svg?branch=master)](https://travis-ci.org/findify/s3mock)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.findify/s3mock_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.findify/s3mock_2.12)
-
 s3mock is a web service implementing AWS S3 API, which can be used for local testing of your code using S3
 but without hitting real S3 endpoints.
 
@@ -25,30 +22,20 @@ Not supported features (these might be implemented later):
 
 ## Installation
 
-s3mock package is available for Scala 2.11/2.12 (on Java 8). To install using SBT, add these
+s3mock package is available for Scala 2.11/2.12/2.13 (on Java 8). To install using SBT, add these
  statements to your `build.sbt`:
 
-    libraryDependencies += "io.findify" %% "s3mock" % "0.2.4" % "test",
+    libraryDependencies += "com.hiya" %% "s3mock" % "0.2.4" % "test",
 
 On maven, update your `pom.xml` in the following way:
 ```xml
     // add this entry to <dependencies/>
     <dependency>
-        <groupId>io.findify</groupId>
+        <groupId>com.hiya</groupId>
         <artifactId>s3mock_2.12</artifactId>
-        <version>0.2.4</version>
+        <version>0.3.0</version>
         <scope>test</scope>
     </dependency>
-```
-
-S3Mock is also available as a [docker container](https://hub.docker.com/r/findify/s3mock/) for out-of-jvm testing:
-```bash
-docker run -p 8001:8001 findify/s3mock:latest
-```
-
-To mount a directory containing the prepared content, mount the volume and set the `S3MOCK_DATA_DIR` environment variable:
-```bash
-docker run -p 8001:8001 -v /host/path/to/s3mock/:/tmp/s3mock/ -e "S3MOCK_DATA_DIR=/tmp/s3mock" findify/s3mock:latest
 ```
 
 ## Usage
@@ -160,12 +147,27 @@ Scala with Alpakka 0.17:
     val contents = s3a.download("bucket", "key")._1.runWith(Sink.reduce[ByteString](_ ++ _)).map(_.utf8String)
       
 ```
-    
+
+## Docker
+
+S3Mock will be also available as a docker container for out-of-jvm testing:
+Build the image with sbt, then:
+
+```bash
+docker run -p 8001:8001 s3mock:latest
+```
+
+To mount a directory containing the prepared content, mount the volume and set the `S3MOCK_DATA_DIR` environment variable:
+```bash
+docker run -p 8001:8001 -v /host/path/to/s3mock/:/tmp/s3mock/ -e "S3MOCK_DATA_DIR=/tmp/s3mock" s3mock:latest
+```
+
 ## License
 
 The MIT License (MIT)
 
-Copyright (c) 2016 Findify AB
+Copyright for portions of project findify/s3mock are held by Findify AB, 2016 as part of project hiyainc-oss/s3mock. 
+All other copyright for project hiyainc-oss/s3mock are held by Hiya Inc, 2020.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

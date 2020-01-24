@@ -1,0 +1,72 @@
+name: Scala CI
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*'
+
+  pull_request:
+
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        scala: ["2.11.12", "2.12.8", "2.13.1"]
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v1
+
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+
+    - name: Cache Ivy
+      uses: actions/cache@v1.0.0
+      with:
+        path: ~/.ivy2
+        key: ${{ runner.os }}-${{ matrix.scala }}-ivy-${{ hashFiles('**/*.sbt') }} }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.scala }}-ivy-
+    - name: Cache SBT
+      uses: actions/cache@v1.0.0
+      with:
+        path: ~/.sbt
+        key: ${{ runner.os }}-${{ matrix.scala }}-sbt-${{ hashFiles('**/*.sbt') }} }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.scala }}-sbt-
+    - name: Cache Coursier
+      uses: actions/cache@v1.0.0
+      with:
+        path: ~/.cache/coursier
+        key: ${{ runner.os }}-${{ matrix.scala }}-coursier-${{ hashFiles('**/*.sbt') }} }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.scala }}-coursier-
+    - name: Run tests
+      run: sbt ++$SCALA_VERSION test
+      env:
+        SCALA_VERSION: ${{ matrix.scala }}
+
+    - name: Publish
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+      run: |
+        VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/v\(.*\),\1,')
+        echo "ThisBuild / version := \"$VERSION\"" > version.sbt
+        sbt ++$SCALA_VERSION ';publish;bintrayRelease'
+      env:
+        SCALA_VERSION: ${{ matrix.scala }}
+        BINTRAY_USER: ohechtl
+        BINTRAY_PASS: ${{ secrets.BINTRAY_PASS }}
+
+
+    - name: Clean up before caching
+      run: |
+        rm -fv $HOME/.ivy2/.sbt.ivy.lock
+        find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
+        find $HOME/.sbt        -name "*.lock"               -print -delete

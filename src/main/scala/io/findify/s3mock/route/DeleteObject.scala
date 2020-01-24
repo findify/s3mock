@@ -11,7 +11,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by shutty on 8/20/16.
   */
-case class DeleteObject(implicit provider: Provider) extends LazyLogging {
+case class DeleteObject()(implicit provider: Provider) extends LazyLogging {
   def route(bucket:String, path:String) = delete {
     complete {
       Try(provider.deleteObject(bucket, path)) match {

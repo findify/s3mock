@@ -4,11 +4,11 @@ version := "0.2.5"
 
 organization := "io.findify"
 
-scalaVersion := "2.12.4"
+scalaVersion := "2.13.1"
 
-crossScalaVersions := Seq("2.11.11", "2.12.4")
+crossScalaVersions := Seq("2.11.11", "2.12.4","2.13.1")
 
-val akkaVersion = "2.5.11"
+val akkaVersion = "2.5.26"
 
 licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
 
@@ -16,17 +16,26 @@ homepage := Some(url("https://github.com/findify/s3mock"))
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-  "com.typesafe.akka" %% "akka-http" % "10.1.0",
+  "com.typesafe.akka" %% "akka-http" % "10.1.10",
   "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % "test",
-  "org.scala-lang.modules" %% "scala-xml" % "1.1.0",
-  "com.github.pathikrit" %% "better-files" % "3.4.0",
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.8.0",
+  "org.scala-lang.modules" %% "scala-xml" % "1.2.0",
+  "com.github.pathikrit" %% "better-files" % "3.8.0",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
   "com.amazonaws" % "aws-java-sdk-s3" % "1.11.294",
-  "org.scalatest" %% "scalatest" % "3.0.5" % "test",
+  "org.scalatest" %% "scalatest" % "3.0.8" % "test",
   "ch.qos.logback" % "logback-classic" % "1.2.3" % "test",
   "org.iq80.leveldb" % "leveldb" % "0.10",
-  "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "0.17" % "test"
+  "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "1.1.2" % "test"
 )
+
+libraryDependencies ++= {
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, major)) if major >= 13 =>
+      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0" % "test")
+    case _ =>
+      Seq()
+  }
+}
 
 parallelExecution in Test := false
 

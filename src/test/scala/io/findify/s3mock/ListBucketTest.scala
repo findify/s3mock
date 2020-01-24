@@ -1,14 +1,12 @@
 package io.findify.s3mock
 
 import java.util
-import java.util.Date
 
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.{AmazonS3Exception, ListObjectsRequest, ListObjectsV2Request, S3ObjectSummary}
 import org.joda.time.DateTime
 
-import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   * Created by shutty on 8/9/16.
@@ -58,7 +56,7 @@ class ListBucketTest extends S3MockTest {
       summary.getSize shouldBe 3
       summary.getStorageClass shouldBe "STANDARD"
 
-      val returnedKey = summaries.last.getKey
+      val returnedKey = summaries.asScala.last.getKey
       s3.getObject("list4", returnedKey).getKey shouldBe "one"
     }
 
@@ -81,7 +79,7 @@ class ListBucketTest extends S3MockTest {
       req1.setBucketName("list5")
       req1.setDelimiter("/")
       val list1 = s3.listObjects(req1)
-      val summaries1 = list1.getObjectSummaries.map(_.getKey).toList
+      val summaries1 = list1.getObjectSummaries.asScala.map(_.getKey).toList
       list1.getCommonPrefixes.asScala.toList shouldBe List("photos/")
       summaries1 shouldBe List("sample.jpg")
     }
@@ -97,7 +95,7 @@ class ListBucketTest extends S3MockTest {
       req2.setDelimiter("/")
       req2.setPrefix("photos/2006/")
       val list2 = s3.listObjects(req2)
-      val summaries2 = list2.getObjectSummaries.map(_.getKey).toList
+      val summaries2 = list2.getObjectSummaries.asScala.map(_.getKey).toList
       list2.getCommonPrefixes.asScala.toList shouldBe List("photos/2006/February/", "photos/2006/January/")
       summaries2 shouldBe Nil
     }
@@ -115,7 +113,7 @@ class ListBucketTest extends S3MockTest {
       req2.setDelimiter("/")
       req2.setPrefix("photos/")
       val list2 = s3.listObjects(req2)
-      val summaries2 = list2.getObjectSummaries.map(_.getKey).toList
+      val summaries2 = list2.getObjectSummaries.asScala.map(_.getKey).toList
       list2.getCommonPrefixes.asScala.toList shouldBe List("photos/2006/")
       summaries2 shouldBe Nil
     }
@@ -131,7 +129,7 @@ class ListBucketTest extends S3MockTest {
       req2.setDelimiter("/")
       req2.setPrefix("dev/")
       val list2 = s3.listObjects(req2)
-      val summaries2 = list2.getObjectSummaries.map(_.getKey).toList
+      val summaries2 = list2.getObjectSummaries.asScala.map(_.getKey).toList
       list2.getCommonPrefixes.asScala.toList shouldBe List("dev/someEvent/")
       summaries2 shouldBe Nil
     }
@@ -162,7 +160,7 @@ class ListBucketTest extends S3MockTest {
       req2.setDelimiter("/")
       req2.setPrefix("dev/")
       val list2 = s3.listObjects(req2)
-      val summaries2 = list2.getObjectSummaries.map(_.getKey).toList
+      val summaries2 = list2.getObjectSummaries.asScala.map(_.getKey).toList
       list2.getCommonPrefixes.asScala.toList shouldBe List("dev/10/", "dev/20/", "dev/30/", "dev/40/", "dev/50/")
       summaries2 shouldBe Nil
     }
@@ -176,7 +174,7 @@ class ListBucketTest extends S3MockTest {
       req2.setPrefix("dev/someEvent/2017/03/13/00/_SUCCESS")
       val list2  = s3.listObjects(req2)
       list2.getObjectSummaries.size shouldEqual 1
-      list2.getObjectSummaries.head.getKey shouldEqual "dev/someEvent/2017/03/13/00/_SUCCESS"
+      list2.getObjectSummaries.asScala.head.getKey shouldEqual "dev/someEvent/2017/03/13/00/_SUCCESS"
     }
 
     it should "obey withMaxKeys" in {

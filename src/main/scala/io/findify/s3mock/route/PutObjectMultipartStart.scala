@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by shutty on 8/20/16.
   */
-case class PutObjectMultipartStart(implicit provider:Provider) extends LazyLogging {
+case class PutObjectMultipartStart()(implicit provider:Provider) extends LazyLogging {
   def route(bucket:String, path:String) = post {
     extractRequest { request =>
       parameter('uploads) { mp =>

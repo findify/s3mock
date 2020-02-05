@@ -4,9 +4,9 @@ version := "0.2.5"
 
 organization := "io.findify"
 
-scalaVersion := "2.13.1"
+scalaVersion in ThisBuild := "2.13.1"
 
-crossScalaVersions := Seq("2.11.11", "2.12.4","2.13.1")
+crossScalaVersions in ThisBuild := Seq("2.11.12", "2.12.10","2.13.1")
 
 val akkaVersion = "2.5.26"
 
@@ -19,6 +19,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http" % "10.1.10",
   "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % "test",
   "org.scala-lang.modules" %% "scala-xml" % "1.2.0",
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.3",
   "com.github.pathikrit" %% "better-files" % "3.8.0",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
   "com.amazonaws" % "aws-java-sdk-s3" % "1.11.294",

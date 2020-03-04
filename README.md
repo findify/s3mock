@@ -25,7 +25,7 @@ Not supported features (these might be implemented later):
 
 ## Installation
 
-s3mock package is available for Scala 2.11/2.12 (on Java 8). To install using SBT, add these
+s3mock package is available for Scala 2.11/2.12/2.13 (on Java 8). To install using SBT, add these
  statements to your `build.sbt`:
 
     libraryDependencies += "io.findify" %% "s3mock" % "0.2.4" % "test",

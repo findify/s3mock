@@ -70,7 +70,7 @@ mainClass in assembly := Some("io.findify.s3mock.Main")
 test in assembly := {}
 
 dockerfile in docker := new Dockerfile {
-  from("openjdk:9.0.1-11-jre-slim")
+  from("adoptopenjdk/openjdk11:jre-11.0.7_10-debian")
   expose(8001)
   add(assembly.value, "/app/s3mock.jar")
   entryPoint("java", "-Xmx128m", "-jar", "--add-modules", "java.xml.bind", "/app/s3mock.jar")
@@ -80,11 +80,4 @@ imageNames in docker := Seq(
   ImageName(s"findify/s3mock:latest")
 )
 
-/*enablePlugins(JavaAppPackaging)
-
-maintainer in Docker := "S3mock"
-packageSummary in Docker := "S3Mock"
-packageDescription := "Mock Service For S3"
-dockerUpdateLatest := true
-dockerExposedPorts := Seq(8001)
-*/
+publishTo := sonatypePublishToBundle.value

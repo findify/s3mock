@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by shutty on 3/13/17.
   */
-case class DeleteObjects (implicit provider: Provider) extends LazyLogging {
+case class DeleteObjects()(implicit provider: Provider) extends LazyLogging {
   def route(bucket:String) = post {
     parameter('delete) { d =>
       entity(as[String]) { xml => {

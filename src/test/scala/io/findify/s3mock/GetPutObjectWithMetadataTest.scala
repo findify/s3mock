@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream
 
 import com.amazonaws.services.s3.model.{ObjectMetadata, S3Object}
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 
 /**
   * Created by shutty on 8/10/16.
@@ -14,12 +14,12 @@ class GetPutObjectWithMetadataTest extends S3MockTest {
     val s3 = fixture.client
     it should "put object with metadata" in {
       s3.createBucket("getput").getName shouldBe "getput"
-      s3.listBuckets().exists(_.getName == "getput") shouldBe true
+      s3.listBuckets().asScala.exists(_.getName == "getput") shouldBe true
 
       val is = new ByteArrayInputStream("bar".getBytes("UTF-8"))
       val metadata: ObjectMetadata = new ObjectMetadata()
       metadata.setContentType("application/json")
-      metadata.setUserMetadata(Map("metamaic" -> "maic"))
+      metadata.setUserMetadata(Map("metamaic" -> "maic").asJava)
 
       s3.putObject("getput", "foo", is, metadata)
 
@@ -32,12 +32,12 @@ class GetPutObjectWithMetadataTest extends S3MockTest {
 
     it should "put object with metadata, but skip unvalid content-type" in {
       s3.createBucket("getput").getName shouldBe "getput"
-      s3.listBuckets().exists(_.getName == "getput") shouldBe true
+      s3.listBuckets().asScala.exists(_.getName == "getput") shouldBe true
 
       val is = new ByteArrayInputStream("bar".getBytes("UTF-8"))
       val metadata: ObjectMetadata = new ObjectMetadata()
       metadata.setContentType("application")
-      metadata.setUserMetadata(Map("metamaic" -> "maic"))
+      metadata.setUserMetadata(Map("metamaic" -> "maic").asJava)
 
       s3.putObject("getput", "foo", is, metadata)
 
@@ -49,12 +49,12 @@ class GetPutObjectWithMetadataTest extends S3MockTest {
     }
     it should "put object in subdirs with metadata, but skip unvalid content-type" in {
       s3.createBucket("getput").getName shouldBe "getput"
-      s3.listBuckets().exists(_.getName == "getput") shouldBe true
+      s3.listBuckets().asScala.exists(_.getName == "getput") shouldBe true
 
       val is = new ByteArrayInputStream("bar".getBytes("UTF-8"))
       val metadata: ObjectMetadata = new ObjectMetadata()
       metadata.setContentType("application")
-      metadata.setUserMetadata(Map("metamaic" -> "maic"))
+      metadata.setUserMetadata(Map("metamaic" -> "maic").asJava)
 
       s3.putObject("getput", "foo1/bar", is, metadata)
 

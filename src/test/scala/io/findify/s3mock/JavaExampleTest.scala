@@ -2,7 +2,7 @@ package io.findify.s3mock
 
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import scala.io.Source
 
 /**
@@ -14,7 +14,7 @@ class JavaExampleTest extends S3MockTest {
     val port = fixture.port
     it should "upload files with anonymous credentials" in {
       s3.createBucket("getput").getName shouldBe "getput"
-      s3.listBuckets().exists(_.getName == "getput") shouldBe true
+      s3.listBuckets().asScala.exists(_.getName == "getput") shouldBe true
       s3.putObject("getput", "foo", "bar")
       val result = Source.fromInputStream(s3.getObject("getput", "foo").getObjectContent, "UTF-8").mkString
       result shouldBe "bar"

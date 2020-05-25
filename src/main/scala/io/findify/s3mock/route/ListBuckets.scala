@@ -8,7 +8,7 @@ import io.findify.s3mock.provider.Provider
 /**
   * Created by shutty on 8/19/16.
   */
-case class ListBuckets(implicit provider:Provider) extends LazyLogging {
+case class ListBuckets()(implicit provider:Provider) extends LazyLogging {
   def route() = get {
     complete {
       logger.debug("listing all buckets")

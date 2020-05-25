@@ -2,9 +2,8 @@ package io.findify.s3mock
 
 import akka.actor.ActorSystem
 import akka.stream.alpakka.s3.S3Settings
-import akka.stream.alpakka.s3.auth.BasicCredentials
+import akka.stream.alpakka.s3.scaladsl.S3
 import akka.stream.{ActorMaterializer, Materializer}
-import akka.stream.alpakka.s3.scaladsl.S3Client
 import better.files.File
 import com.amazonaws.auth.{AWSStaticCredentialsProvider, AnonymousAWSCredentials, BasicAWSCredentials, DefaultAWSCredentialsProviderChain}
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
@@ -33,7 +32,7 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
   private val fileBasedS3 = clientFor("localhost", fileBasedPort)
   private val fileBasedServer = new S3Mock(fileBasedPort, new FileProvider(workDir))
   private val fileBasedTransferManager: TransferManager = TransferManagerBuilder.standard().withS3Client(fileBasedS3).build()
-  private val fileBasedAlpakkaClient = new S3Client(S3Settings(fileSystemConfig))(fileSystem, fileMat)
+  private val fileBasedAlpakkaClient = S3
 
   private val inMemoryPort = 8002
   private val inMemoryConfig = configFor("localhost", inMemoryPort)
@@ -42,9 +41,9 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
   private val inMemoryS3 = clientFor("localhost", inMemoryPort)
   private val inMemoryServer = new S3Mock(inMemoryPort, new InMemoryProvider)
   private val inMemoryTransferManager: TransferManager = TransferManagerBuilder.standard().withS3Client(inMemoryS3).build()
-  private val inMemoryBasedAlpakkaClient = new S3Client(S3Settings(inMemoryConfig))(inMemorySystem, inMemoryMat)
+  private val inMemoryBasedAlpakkaClient = S3
 
-  case class Fixture(server: S3Mock, client: AmazonS3, tm: TransferManager, name: String, port: Int, alpakka: S3Client, system: ActorSystem, mat: Materializer)
+  case class Fixture(server: S3Mock, client: AmazonS3, tm: TransferManager, name: String, port: Int, alpakka: S3.type , system: ActorSystem, mat: Materializer)
   val fixtures = List(
     Fixture(fileBasedServer, fileBasedS3, fileBasedTransferManager, "file based S3Mock", fileBasedPort, fileBasedAlpakkaClient, fileSystem, fileMat),
     Fixture(inMemoryServer, inMemoryS3, inMemoryTransferManager, "in-memory S3Mock", inMemoryPort, inMemoryBasedAlpakkaClient, inMemorySystem, inMemoryMat)
@@ -84,17 +83,17 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   def configFor(host: String, port: Int): Config = {
     ConfigFactory.parseMap(Map(
-      "akka.stream.alpakka.s3.proxy.host" -> host,
-      "akka.stream.alpakka.s3.proxy.port" -> port,
-      "akka.stream.alpakka.s3.proxy.secure" -> false,
-      "akka.stream.alpakka.s3.path-style-access" -> true,
-      "akka.stream.alpakka.s3.aws.credentials.provider" -> "static",
-      "akka.stream.alpakka.s3.aws.credentials.access-key-id" -> "foo",
-      "akka.stream.alpakka.s3.aws.credentials.secret-access-key" -> "bar",
-      "akka.stream.alpakka.s3.aws.region.provider" -> "static",
-      "akka.stream.alpakka.s3.aws.region.default-region" -> "us-east-1",
-      "akka.stream.alpakka.s3.buffer" -> "memory",
-      "akka.stream.alpakka.s3.disk-buffer-path" -> ""
+      "alpakka.s3.proxy.host" -> host,
+      "alpakka.s3.proxy.port" -> port,
+      "alpakka.s3.proxy.secure" -> false,
+      "alpakka.s3.path-style-access" -> true,
+      "alpakka.s3.aws.credentials.provider" -> "static",
+      "alpakka.s3.aws.credentials.access-key-id" -> "foo",
+      "alpakka.s3.aws.credentials.secret-access-key" -> "bar",
+      "alpakka.s3.aws.region.provider" -> "static",
+      "alpakka.s3.aws.region.default-region" -> "us-east-1",
+      "alpakka.s3.buffer" -> "memory",
+      "alpakka.s3.disk-buffer-path" -> ""
     ).asJava)
 
   }

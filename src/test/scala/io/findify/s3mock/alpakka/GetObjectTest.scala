@@ -3,15 +3,13 @@ package io.findify.s3mock.alpakka
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.headers.ByteRange
 import akka.stream.ActorMaterializer
-import akka.stream.alpakka.s3.auth.AWSCredentials
-import akka.stream.alpakka.s3.scaladsl.S3Client
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import io.findify.s3mock.S3MockTest
 
 import scala.concurrent.duration._
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.Await
 
 /**
@@ -28,16 +26,16 @@ class GetObjectTest extends S3MockTest {
     it should "get objects via alpakka" in {
       s3.createBucket("alpakka1")
       s3.putObject("alpakka1", "test1", "foobar")
-      val result = Await.result(fixture.alpakka.download("alpakka1", "test1")._1.runWith(Sink.seq), 5.second)
-      val str = result.fold(ByteString(""))(_ ++ _).utf8String
+      val (result,_) =  Await.result(fixture.alpakka.download("alpakka1", "test1").runWith(Sink.head),5.seconds).get
+      val str = Await.result(result.runFold(ByteString(""))(_ ++ _),5.seconds).utf8String
       str shouldBe "foobar"
     }
 
     it should "get by range" in {
       s3.createBucket("alpakka2")
       s3.putObject("alpakka2", "test2", "foobar")
-      val result = Await.result(fixture.alpakka.download("alpakka2", "test2", Some(ByteRange(1, 4)))._1.runWith(Sink.seq), 5.second)
-      val str = result.fold(ByteString(""))(_ ++ _).utf8String
+      val (result,_) =  Await.result(fixture.alpakka.download("alpakka2", "test2", Some(ByteRange(1, 4))).runWith(Sink.head),5.seconds).get
+      val str = Await.result(result.runFold(ByteString(""))(_ ++ _),5.seconds).utf8String
       str shouldBe "ooba"
     }
   }

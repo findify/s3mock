@@ -1,5 +1,6 @@
 package io.findify.s3mock.route
 
+import java.net.URLDecoder
 import java.util
 
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
@@ -40,10 +41,11 @@ case class CopyObject()(implicit provider: Provider) extends LazyLogging {
   }
   def route(destBucket:String, destKey:String) = put {
     headerValueByName("x-amz-copy-source") { source =>
+      val decodedSource = URLDecoder.decode(source, "utf-8")
       extractRequest { req =>
         complete {
           val meta = extractMetadata(req)
-          split(source) match {
+          split(decodedSource) match {
             case Some((sourceBucket, sourceKey)) =>
               Try(provider.copyObject(sourceBucket, sourceKey, destBucket, destKey, meta)) match {
                 case Success(result) =>

@@ -28,7 +28,7 @@ Not supported features (these might be implemented later):
 s3mock package is available for Scala 2.11/2.12/2.13 (on Java 8). To install using SBT, add these
  statements to your `build.sbt`:
 
-    libraryDependencies += "io.findify" %% "s3mock" % "0.2.4" % "test",
+    libraryDependencies += "io.findify" %% "s3mock" % "0.2.5" % "test",
 
 On maven, update your `pom.xml` in the following way:
 ```xml
@@ -36,7 +36,7 @@ On maven, update your `pom.xml` in the following way:
     <dependency>
         <groupId>io.findify</groupId>
         <artifactId>s3mock_2.12</artifactId>
-        <version>0.2.4</version>
+        <version>0.2.5</version>
         <scope>test</scope>
     </dependency>
 ```
@@ -133,7 +133,7 @@ Scala with AWS S3 SDK:
     api.shutdown() // this one terminates the actor system. Use api.stop() to just unbind the service without messing with the ActorSystem
 ```
 
-Scala with Alpakka 0.17:
+Scala with Alpakka 1.0.0:
 ```scala
     import akka.actor.ActorSystem
     import akka.stream.ActorMaterializer
@@ -143,15 +143,15 @@ Scala with Alpakka 0.17:
     import scala.collection.JavaConverters._
 
     val config = ConfigFactory.parseMap(Map(
-      "akka.stream.alpakka.s3.proxy.host" -> "localhost",
-      "akka.stream.alpakka.s3.proxy.port" -> 8001,
-      "akka.stream.alpakka.s3.proxy.secure" -> false,
-      "akka.stream.alpakka.s3.path-style-access" -> true,
-      "akka.stream.alpakka.s3.aws.credentials.provider" -> "static",
-      "akka.stream.alpakka.s3.aws.credentials.access-key-id" -> "foo",
-      "akka.stream.alpakka.s3.aws.credentials.secret-access-key" -> "bar",
-      "akka.stream.alpakka.s3.aws.region.provider" -> "static",
-      "akka.stream.alpakka.s3.aws.region.default-region" -> "us-east-1"      
+      "alpakka.s3.proxy.host" -> "localhost",
+      "alpakka.s3.proxy.port" -> 8001,
+      "alpakka.s3.proxy.secure" -> false,
+      "alpakka.s3.path-style-access" -> true,
+      "alpakka.s3.aws.credentials.provider" -> "static",
+      "alpakka.s3.aws.credentials.access-key-id" -> "foo",
+      "alpakka.s3.aws.credentials.secret-access-key" -> "bar",
+      "alpakka.s3.aws.region.provider" -> "static",
+      "alpakka.s3.aws.region.default-region" -> "us-east-1"      
     ).asJava)
     implicit val system = ActorSystem.create("test", config)
     implicit val mat = ActorMaterializer()

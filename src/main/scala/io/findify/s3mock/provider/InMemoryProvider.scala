@@ -53,7 +53,7 @@ class InMemoryProvider extends Provider with LazyLogging {
           Content(name, content.lastModificationTime, DigestUtils.md5Hex(content.data), content.data.length, "STANDARD")
         }
         logger.debug(s"listing bucket contents: ${matchResults.map(_.key)}")
-        val commonPrefixes = delimiter match {
+        val commonPrefixes = normalizeDelimiter(delimiter) match {
           case Some(del) => matchResults.flatMap(f => commonPrefix(f.key, prefix2, del)).toList.sorted.distinct
           case None => Nil
         }

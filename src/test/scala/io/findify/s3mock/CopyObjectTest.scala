@@ -53,5 +53,14 @@ class CopyObjectTest extends S3MockTest {
       obj.getObjectMetadata.getUserMetadata.get("new-key1") shouldBe "new-value1"
       obj.getObjectMetadata.getUserMetadata.get("new-key2") shouldBe "new-value2"
     }
+
+    it should "copy an object with = in key" in {
+      s3.createBucket("test-bucket")
+      s3.putObject("test-bucket", "path/with=123/test.txt", "contents")
+
+      val copyRequest = new CopyObjectRequest("test-bucket", "path/with=123/test.txt", "test-bucket", "path/with=345/test2.txt")
+      s3.copyObject(copyRequest)
+      getContent(s3.getObject("test-bucket", "path/with=345/test2.txt")) shouldBe "contents"
+    }
   }
 }

@@ -25,6 +25,8 @@ trait Provider {
   def deleteBucket(bucket:String):Unit
   def copyObject(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String, newMeta: Option[ObjectMetadata] = None): CopyObjectResult
   def copyObjectMultipart(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String,  partNumber:Int, uploadId:String, fromByte: Int, toByte:Int,  meta: Option[ObjectMetadata] = None): CopyObjectResult
+
+  def normalizeDelimiter(delimiter:Option[String]):Option[String] = delimiter.flatMap {s => if(s.isEmpty) None else Some(s)}
 }
 
 

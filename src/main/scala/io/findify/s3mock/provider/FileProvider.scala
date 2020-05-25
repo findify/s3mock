@@ -43,17 +43,21 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     val bucketFile = File(s"$dir/$bucket/")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     val bucketFileString = fromOs(bucketFile.toString)
-    val bucketFiles = bucketFile.listRecursively.filter(f => {
+    val bucketFiles = bucketFile.listRecursively(File.VisitOptions.follow).filter(f => {
         val fString = fromOs(f.toString).drop(bucketFileString.length).dropWhile(_ == '/')
         fString.startsWith(prefixNoLeadingSlash) && !f.isDirectory
       })
     val files = bucketFiles.map(f => {
       val stream = new FileInputStream(f.toJava)
-      val md5 = DigestUtils.md5Hex(stream)
-      Content(fromOs(f.toString).drop(bucketFileString.length+1).dropWhile(_ == '/'), DateTime(f.lastModifiedTime.toEpochMilli), md5, f.size, "STANDARD")
+      try {
+        val md5 = DigestUtils.md5Hex(stream)
+        Content(fromOs(f.toString).drop(bucketFileString.length+1).dropWhile(_ == '/'), DateTime(f.lastModifiedTime.toEpochMilli), md5, f.size, "STANDARD")
+      } finally {
+        stream.close()
+      }
     }).toList
     logger.debug(s"listing bucket contents: ${files.map(_.key)}")
-    val commonPrefixes = delimiter match {
+    val commonPrefixes = normalizeDelimiter(delimiter) match {
       case Some(del) => files.flatMap(f => commonPrefix(f.key, prefixNoLeadingSlash, del)).distinct.sorted
       case None => Nil
     }
@@ -82,7 +86,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   override def getObject(bucket:String, key:String): GetObjectData = {
     val bucketFile = File(s"$dir/$bucket")
     val file = File(s"$dir/$bucket/$key")
-    logger.debug(s"reading object for s://$bucket/$key")
+    logger.debug(s"reading object for s3://$bucket/$key")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
     if (!file.exists) throw NoSuchKeyException(bucket, key)
     if (file.isDirectory) throw NoSuchKeyException(bucket, key)

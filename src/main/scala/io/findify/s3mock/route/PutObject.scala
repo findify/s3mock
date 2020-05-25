@@ -20,7 +20,7 @@ import scala.util.{Failure, Success, Try}
 case class PutObject()(implicit provider:Provider, mat:Materializer) extends LazyLogging {
   def route(bucket:String, path:String) = put {
     extractRequest { request =>
-      headerValueByName("authorization") { auth =>
+      headerValueByName("x-amz-decoded-content-length") { _ =>
         completeSigned(bucket, path)
       } ~ completePlain(bucket, path)
     }

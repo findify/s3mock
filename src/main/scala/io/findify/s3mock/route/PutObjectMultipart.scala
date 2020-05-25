@@ -18,7 +18,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by shutty on 8/19/16.
   */
-case class PutObjectMultipart(implicit provider: Provider, mat: Materializer) extends LazyLogging {
+case class PutObjectMultipart()(implicit provider: Provider, mat: Materializer) extends LazyLogging {
 
   type EntityDecoder = Graph[FlowShape[ByteString, ByteString], NotUsed]
 

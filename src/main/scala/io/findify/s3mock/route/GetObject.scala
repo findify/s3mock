@@ -21,7 +21,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by shutty on 8/19/16.
   */
-case class GetObject(implicit provider: Provider) extends LazyLogging {
+case class GetObject()(implicit provider: Provider) extends LazyLogging {
   def route(bucket: String, path: String, params: Map[String, String]) = get {
 
     withRangeSupport {

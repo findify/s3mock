@@ -11,7 +11,7 @@ import io.findify.s3mock.provider.Provider
 
 import scala.util.{Failure, Success, Try}
 
-case class CopyObjectMultipart(implicit provider: Provider) extends LazyLogging {
+case class CopyObjectMultipart()(implicit provider: Provider) extends LazyLogging {
   def split(path: String): Option[(String, String)] = {
     val noFirstSlash = path.replaceAll("^/+", "")
     val result = noFirstSlash.split("/").toList match {

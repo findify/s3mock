@@ -10,7 +10,8 @@ import akka.stream.ActorMaterializer
 import com.amazonaws.services.s3.model._
 import com.amazonaws.util.IOUtils
 
-import scala.collection.JavaConversions._
+import scala.collection.parallel.CollectionConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.{Random, Try}
@@ -25,7 +26,7 @@ class GetPutObjectTest extends S3MockTest {
     val port = fixture.port
     it should "put object" in {
       s3.createBucket("getput").getName shouldBe "getput"
-      s3.listBuckets().exists(_.getName == "getput") shouldBe true
+      s3.listBuckets().asScala.exists(_.getName == "getput") shouldBe true
       s3.putObject("getput", "foo", "bar")
       val result = getContent(s3.getObject("getput", "foo"))
       result shouldBe "bar"
@@ -34,7 +35,7 @@ class GetPutObjectTest extends S3MockTest {
       implicit val system = ActorSystem.create("test")
       implicit val mat = ActorMaterializer()
       val http = Http(system)
-      if (!s3.listBuckets().exists(_.getName == "getput")) s3.createBucket("getput")
+      if (!s3.listBuckets().asScala.exists(_.getName == "getput")) s3.createBucket("getput")
       val response = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.POST, uri = s"http://127.0.0.1:$port/getput/foo2", entity = "bar")), 10.seconds)
       getContent(s3.getObject("getput", "foo2")) shouldBe "bar"
     }
@@ -59,9 +60,9 @@ class GetPutObjectTest extends S3MockTest {
       s3.createBucket("tbucket")
       s3.putObject(
         new PutObjectRequest("tbucket", "taggedobj", new ByteArrayInputStream("content".getBytes("UTF-8")), new ObjectMetadata)
-          .withTagging(new ObjectTagging(List(new Tag("key1", "val1"), new Tag("key=&interesting", "value=something&stragne"))))
+          .withTagging(new ObjectTagging(List(new Tag("key1", "val1"), new Tag("key=&interesting", "value=something&stragne")).asJava))
       )
-      var tagging = s3.getObjectTagging(new GetObjectTaggingRequest("tbucket", "taggedobj")).getTagSet
+      var tagging = s3.getObjectTagging(new GetObjectTaggingRequest("tbucket", "taggedobj")).getTagSet.asScala
       var tagMap = new util.HashMap[String, String]()
       for (tag <- tagging) {
         tagMap.put(tag.getKey, tag.getValue)
@@ -101,10 +102,10 @@ class GetPutObjectTest extends S3MockTest {
 
     it should "work with dot-files" in {
       s3.createBucket("dot")
-      s3.listBuckets().exists(_.getName == "dot") shouldBe true
+      s3.listBuckets().asScala.exists(_.getName == "dot") shouldBe true
       s3.putObject("dot", "foo", "bar")
       s3.putObject("dot", ".foo", "bar")
-      val result = s3.listObjects("dot").getObjectSummaries.toList.map(_.getKey)
+      val result = s3.listObjects("dot").getObjectSummaries.asScala.toList.map(_.getKey)
       result shouldBe List(".foo", "foo")
     }
     it should "support ranged get requests" in {

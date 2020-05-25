@@ -7,11 +7,12 @@ import io.findify.s3mock.error.{InternalErrorException, NoSuchBucketException}
 import io.findify.s3mock.provider.Provider
 
 import scala.util.{Failure, Success, Try}
+import scala.language.postfixOps
 
 /**
   * Created by shutty on 8/19/16.
   */
-case class ListBucket(implicit provider:Provider) extends LazyLogging {
+case class ListBucket()(implicit provider:Provider) extends LazyLogging {
   def route(bucket:String) = get {
     parameter('prefix?, 'delimiter?, Symbol("max-keys")?) { (prefix, delimiter, maxkeys) =>
       complete {

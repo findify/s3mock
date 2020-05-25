@@ -7,6 +7,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Builder;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import io.findify.s3mock.S3Mock;
 
 /**
@@ -23,7 +24,8 @@ public class JavaBuilderExample {
                 .withCredentials(new AWSStaticCredentialsProvider(new AnonymousAWSCredentials()))
                 .build();
         client.createBucket("testbucket");
-        client.putObject("testbucket", "file/name", "contents");
+        client.putObject("testbucket", "file^name", "contents");
+        client.deleteObjects(new DeleteObjectsRequest("testbucket").withKeys("file^name"));
     }
 
 }

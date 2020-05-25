@@ -202,5 +202,18 @@ class ListBucketTest extends S3MockTest {
       val list = s3.listObjects("list10").getObjectSummaries.asScala.toList
       list.find(_.getKey == "foo").map(_.getLastModified.after(DateTime.now().minusMinutes(1).toDate)) shouldBe Some(true)
     }
+
+    it should "work with empty string delimiters as if no delimiter was provided" in {
+      s3.createBucket("list11")
+      s3.putObject("list11", "sample.jpg", "xxx")
+      s3.putObject("list11", "photos/2006/January/sample.jpg", "yyy")
+
+      val req = new ListObjectsRequest()
+      req.setBucketName("list11")
+      req.setDelimiter("")
+      req.setPrefix("")
+      val list = s3.listObjects(req)
+      list.getObjectSummaries.asScala.map(_.getKey).toList should contain only ("sample.jpg", "photos/2006/January/sample.jpg")
+    }
   }
 }

@@ -49,8 +49,12 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
       })
     val files = bucketFiles.map(f => {
       val stream = new FileInputStream(f.toJava)
-      val md5 = DigestUtils.md5Hex(stream)
-      Content(fromOs(f.toString).drop(bucketFileString.length+1).dropWhile(_ == '/'), DateTime(f.lastModifiedTime.toEpochMilli), md5, f.size, "STANDARD")
+      try {
+        val md5 = DigestUtils.md5Hex(stream)
+        Content(fromOs(f.toString).drop(bucketFileString.length+1).dropWhile(_ == '/'), DateTime(f.lastModifiedTime.toEpochMilli), md5, f.size, "STANDARD")
+      } finally {
+        stream.close()
+      }
     }).toList
     logger.debug(s"listing bucket contents: ${files.map(_.key)}")
     val commonPrefixes = delimiter match {

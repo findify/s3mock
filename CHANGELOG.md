@@ -1,3 +1,8 @@
+0.2.6
+=======
+* scala 2.13 support
+* java 11 support
+
 0.2.5
 =======
 * multipart copy support

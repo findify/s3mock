@@ -4,11 +4,11 @@ version := "0.2.6"
 
 organization := "io.findify"
 
-scalaVersion in ThisBuild := "2.13.1"
+scalaVersion in ThisBuild := "2.13.2"
 
-crossScalaVersions in ThisBuild := Seq("2.11.12", "2.12.10","2.13.1")
+crossScalaVersions in ThisBuild := Seq("2.11.12", "2.12.10","2.13.2")
 
-val akkaVersion = "2.5.26"
+val akkaVersion = "2.5.31"
 
 licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
 
@@ -16,16 +16,16 @@ homepage := Some(url("https://github.com/findify/s3mock"))
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-  "com.typesafe.akka" %% "akka-http" % "10.1.10",
+  "com.typesafe.akka" %% "akka-http" % "10.1.12",
   "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % "test",
-  "org.scala-lang.modules" %% "scala-xml" % "1.2.0",
-  "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.3",
-  "com.github.pathikrit" %% "better-files" % "3.8.0",
+  "org.scala-lang.modules" %% "scala-xml" % "1.3.0",
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.6",
+  "com.github.pathikrit" %% "better-files" % "3.9.1",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
   "com.amazonaws" % "aws-java-sdk-s3" % "1.11.294",
   "org.scalatest" %% "scalatest" % "3.0.8" % "test",
   "ch.qos.logback" % "logback-classic" % "1.2.3" % "test",
-  "org.iq80.leveldb" % "leveldb" % "0.10",
+  "org.iq80.leveldb" % "leveldb" % "0.12",
   "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "1.1.2" % "test",
   "javax.xml.bind" % "jaxb-api" % "2.3.1"
 )

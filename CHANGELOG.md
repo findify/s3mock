@@ -2,6 +2,11 @@
 =======
 * scala 2.13 support
 * java 11 support
+* follow symlinks on local disk
+* DeleteObjects should encode object key like single-object APIs
+* allow = in copy paths
+* update readme for alpakka 1.0
+* DeleteObjects should encode object key like single-object APIs
 
 0.2.5
 =======

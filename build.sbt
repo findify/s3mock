@@ -27,7 +27,9 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.2.3" % "test",
   "org.iq80.leveldb" % "leveldb" % "0.12",
   "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "1.1.2" % "test",
-  "javax.xml.bind" % "jaxb-api" % "2.3.1"
+  "javax.xml.bind" % "jaxb-api" % "2.3.0",
+  "com.sun.xml.bind" % "jaxb-core" % "2.3.0",
+  "com.sun.xml.bind" % "jaxb-impl" % "2.3.0"
 )
 
 libraryDependencies ++= {
@@ -73,7 +75,14 @@ dockerfile in docker := new Dockerfile {
   from("adoptopenjdk/openjdk11:jre-11.0.7_10-debian")
   expose(8001)
   add(assembly.value, "/app/s3mock.jar")
-  entryPoint("java", "-Xmx128m", "-jar", "--add-modules", "java.xml.bind", "/app/s3mock.jar")
+  entryPoint(
+      "java", 
+      "-Xmx128m", 
+      "-jar", 
+      "--add-opens",
+      "java.base/jdk.internal.ref=ALL-UNNAMED",
+      "/app/s3mock.jar"
+  )
 }
 imageNames in docker := Seq(
   ImageName(s"findify/s3mock:${version.value.replaceAll("\\+", "_")}"),

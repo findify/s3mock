@@ -57,7 +57,7 @@ Just point your s3 client to a localhost, enable path-style access, and it shoul
 
 There are two working modes for s3mock:
 * File-based: it will map a local directory as a collection of s3 buckets. This mode can be useful when you need to have a bucket with some pre-loaded data (and too lazy to re-upload everything on each run).
-* In-memory: keep everything in RAM. All the data you've uploaded to s3mock will be wiped completely on shutdown. 
+* In-memory: keep everything in RAM. All the data you've uploaded to s3mock will be wiped completely on stop. 
 
 Java:
 ```java
@@ -93,7 +93,7 @@ Java:
 
     client.createBucket("testbucket");
     client.putObject("testbucket", "file/name", "contents");
-    api.shutdown(); // kills the underlying actor system. Use api.stop() to just unbind the port.
+    api.stop(); // kills the underlying actor system. Use api.stop() to just unbind the port.
 ```
 
 Scala with AWS S3 SDK:
@@ -130,7 +130,7 @@ Scala with AWS S3 SDK:
     /** Use it as usual. */
     client.createBucket("foo")
     client.putObject("foo", "bar", "baz")
-    api.shutdown() // this one terminates the actor system. Use api.stop() to just unbind the service without messing with the ActorSystem
+    api.stop() // this one terminates the actor system. Use api.stop() to just unbind the service without messing with the ActorSystem
 ```
 
 Scala with Alpakka 1.0.0:

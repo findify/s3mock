@@ -1,7 +1,9 @@
 package io.findify.s3mock.route
 
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
+import com.amazonaws.services.s3.Headers
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.{InternalErrorException, NoSuchBucketException}
 import io.findify.s3mock.provider.Provider
@@ -27,7 +29,7 @@ case class PutObjectMultipartComplete()(implicit provider:Provider) extends Lazy
                   ContentType(MediaTypes.`application/xml`, HttpCharsets.`UTF-8`),
                   response.toXML.toString()
                 )
-              )
+              ).withHeaders(RawHeader(Headers.S3_VERSION_ID, response.objectMetadata.getVersionId))
             case Failure(e: NoSuchBucketException) =>
               HttpResponse(
                 StatusCodes.NotFound,

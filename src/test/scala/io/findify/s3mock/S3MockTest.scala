@@ -11,7 +11,7 @@ import com.amazonaws.services.s3.{AmazonS3, AmazonS3Client, AmazonS3ClientBuilde
 import com.amazonaws.services.s3.model.S3Object
 import com.amazonaws.services.s3.transfer.{TransferManager, TransferManagerBuilder}
 import com.typesafe.config.{Config, ConfigFactory}
-import io.findify.s3mock.provider.{FileProvider, InMemoryProvider}
+import io.findify.s3mock.provider.{FileProvider, InMemoryProvider, InMemoryVersionedProvider}
 
 import scala.collection.JavaConverters._
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
@@ -43,10 +43,20 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
   private val inMemoryTransferManager: TransferManager = TransferManagerBuilder.standard().withS3Client(inMemoryS3).build()
   private val inMemoryBasedAlpakkaClient = S3
 
-  case class Fixture(server: S3Mock, client: AmazonS3, tm: TransferManager, name: String, port: Int, alpakka: S3.type , system: ActorSystem, mat: Materializer)
+  private val inMemoryVersionedPort = 8003
+  private val inMemoryVersionedConfig = configFor("localhost", inMemoryVersionedPort)
+  private val inMemoryVersionedSystem = ActorSystem.create("testramversioned", inMemoryVersionedConfig)
+  private val inMemoryVersionedMat = ActorMaterializer()(inMemoryVersionedSystem)
+  private val inMemoryVersionedS3 = clientFor("localhost", inMemoryVersionedPort)
+  private val inMemoryVersionedServer = new S3Mock(inMemoryVersionedPort, new InMemoryVersionedProvider)
+  private val inMemoryVersionedTransferManager: TransferManager = TransferManagerBuilder.standard().withS3Client(inMemoryVersionedS3).build()
+  private val inMemoryVersionedBasedAlpakkaClient = S3
+
+  case class Fixture(server: S3Mock, client: AmazonS3, tm: TransferManager, name: String, port: Int, alpakka: S3.type , system: ActorSystem, mat: Materializer, versioned: Boolean = false)
   val fixtures = List(
     Fixture(fileBasedServer, fileBasedS3, fileBasedTransferManager, "file based S3Mock", fileBasedPort, fileBasedAlpakkaClient, fileSystem, fileMat),
-    Fixture(inMemoryServer, inMemoryS3, inMemoryTransferManager, "in-memory S3Mock", inMemoryPort, inMemoryBasedAlpakkaClient, inMemorySystem, inMemoryMat)
+    Fixture(inMemoryServer, inMemoryS3, inMemoryTransferManager, "in-memory S3Mock", inMemoryPort, inMemoryBasedAlpakkaClient, inMemorySystem, inMemoryMat),
+    Fixture(inMemoryVersionedServer, inMemoryVersionedS3, inMemoryVersionedTransferManager, "in-memory-versioned S3Mock", inMemoryVersionedPort, inMemoryVersionedBasedAlpakkaClient, inMemoryVersionedSystem, inMemoryVersionedMat, versioned = true)
   )
 
   def behaviour(fixture: => Fixture) : Unit
@@ -59,15 +69,19 @@ trait S3MockTest extends FlatSpec with Matchers with BeforeAndAfterAll {
     if (!File(workDir).exists) File(workDir).createDirectory()
     fileBasedServer.start
     inMemoryServer.start
+    inMemoryVersionedServer.start
     super.beforeAll
   }
   override def afterAll = {
     super.afterAll
     inMemoryServer.stop
+    inMemoryVersionedServer.stop
     fileBasedServer.stop
     inMemoryTransferManager.shutdownNow()
+    inMemoryVersionedTransferManager.shutdownNow()
     Await.result(fileSystem.terminate(), Duration.Inf)
     Await.result(inMemorySystem.terminate(), Duration.Inf)
+    Await.result(inMemoryVersionedSystem.terminate(), Duration.Inf)
     File(workDir).delete()
   }
   def getContent(s3Object: S3Object): String = Source.fromInputStream(s3Object.getObjectContent, "UTF-8").mkString

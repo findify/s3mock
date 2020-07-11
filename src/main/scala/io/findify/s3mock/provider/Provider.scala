@@ -17,7 +17,7 @@ trait Provider {
   def listBucket(bucket:String, prefix:Option[String], delimiter: Option[String], maxkeys: Option[Int]):ListBucket
   def createBucket(name:String, bucketConfig:CreateBucketConfiguration):CreateBucket
   def putObject(bucket:String, key:String, data:Array[Byte], metadata: ObjectMetadata):Unit
-  def getObject(bucket:String, key:String): GetObjectData
+  def getObject(bucket:String, key:String, params: Map[String, String] = Map.empty): GetObjectData
   def putObjectMultipartStart(bucket:String, key:String, metadata: ObjectMetadata):InitiateMultipartUploadResult
   def putObjectMultipartPart(bucket:String, key:String, partNumber:Int, uploadId:String, data:Array[Byte]):Unit
   def putObjectMultipartComplete(bucket:String, key:String, uploadId:String, request:CompleteMultipartUpload):CompleteMultipartUploadResult

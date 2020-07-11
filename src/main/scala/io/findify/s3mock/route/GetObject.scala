@@ -28,8 +28,7 @@ case class GetObject()(implicit provider: Provider) extends LazyLogging {
       respondWithDefaultHeader(`Last-Modified`(DateTime(1970, 1, 1))) {
         complete {
           logger.debug(s"get object: bucket=$bucket, path=$path")
-
-          Try(provider.getObject(bucket, path)) match {
+          Try(provider.getObject(bucket, path, params)) match {
             case Success(GetObjectData(data, metaOption)) =>
               metaOption match {
                 case Some(meta) =>

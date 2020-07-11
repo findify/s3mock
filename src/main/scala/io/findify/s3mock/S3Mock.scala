@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import com.typesafe.scalalogging.LazyLogging
-import io.findify.s3mock.provider.{FileProvider, InMemoryProvider, Provider}
+import io.findify.s3mock.provider.{FileProvider, InMemoryProvider, InMemoryVersionedProvider, Provider}
 import io.findify.s3mock.route._
 
 import scala.concurrent.{Await, Future}
@@ -128,6 +128,15 @@ object S3Mock {
       */
     def withInMemoryBackend(): Builder = {
       defaultProvider = new InMemoryProvider()
+      this
+    }
+
+    /**
+      * Use in-memory versioned backend.
+      * @return
+      */
+    def withInMemoryVersionedBackend(): Builder = {
+      defaultProvider = new InMemoryVersionedProvider()
       this
     }
 

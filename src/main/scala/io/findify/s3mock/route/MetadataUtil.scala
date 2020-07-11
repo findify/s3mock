@@ -70,6 +70,7 @@ object MetadataUtil extends LazyLogging {
     if(metadata.getContentType == null){
       metadata.setContentType(request.entity.getContentType.toString)
     }
+    metadata.setHeader(Headers.S3_VERSION_ID, System.currentTimeMillis().toString)
     metadata
   }
 }

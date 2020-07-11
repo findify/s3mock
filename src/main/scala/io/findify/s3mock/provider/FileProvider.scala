@@ -83,7 +83,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     objectMetadata.setLastModified(org.joda.time.DateTime.now().toDate)
     metadataStore.put(bucket, key, objectMetadata)
   }
-  override def getObject(bucket:String, key:String): GetObjectData = {
+  override def getObject(bucket: String, key: String, params: Map[String, String] = Map.empty): GetObjectData = {
     val bucketFile = File(s"$dir/$bucket")
     val file = File(s"$dir/$bucket/$key")
     logger.debug(s"reading object for s3://$bucket/$key")
@@ -127,7 +127,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
       m.setLastModified(org.joda.time.DateTime.now().toDate)
     }
     logger.debug(s"completed multipart upload for s3://$bucket/$key")
-    CompleteMultipartUploadResult(bucket, key, hash)
+    CompleteMultipartUploadResult(bucket, key, hash, metadataStore.get(bucket, key).get)
   }
 
   override def copyObject(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String, newMeta: Option[ObjectMetadata] = None): CopyObjectResult = {

@@ -1,10 +1,12 @@
 package io.findify.s3mock.route
 
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
+import com.amazonaws.services.s3.Headers
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.S3ChunkedProtocolStage
@@ -41,7 +43,8 @@ case class PutObject()(implicit provider:Provider, mat:Materializer) extends Laz
           val bytes = data.toArray
           val metadata = populateObjectMetadata(request, bytes)
           Try(provider.putObject(bucket, path, bytes, metadata)) match {
-            case Success(()) => HttpResponse(StatusCodes.OK)
+            case Success(()) =>
+              HttpResponse(StatusCodes.OK).withHeaders(RawHeader(Headers.S3_VERSION_ID, metadata.getVersionId))
             case Failure(e: NoSuchBucketException) =>
               HttpResponse(
                 StatusCodes.NotFound,
@@ -68,7 +71,8 @@ case class PutObject()(implicit provider:Provider, mat:Materializer) extends Laz
           val bytes = data.toArray
           val metadata = populateObjectMetadata(request, bytes)
           Try(provider.putObject(bucket, path, bytes, metadata)) match {
-            case Success(()) => HttpResponse(StatusCodes.OK)
+            case Success(()) =>
+              HttpResponse(StatusCodes.OK).withHeaders(RawHeader(Headers.S3_VERSION_ID, metadata.getVersionId))
             case Failure(e: NoSuchBucketException) =>
               HttpResponse(
                 StatusCodes.NotFound,

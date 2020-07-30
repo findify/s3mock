@@ -26,6 +26,18 @@ class ListBucketTest extends S3MockTest {
       val list = s3.listObjects("list", "foo").getObjectSummaries.asScala.toList
       list.map(_.getKey).forall(_.startsWith("foo")) shouldBe true
     }
+    it should "list bucket with marker" in {
+      s3.createBucket("list")
+      s3.putObject("list", "foo1", "xxx")
+      s3.putObject("list", "foo2", "xxx")
+      s3.putObject("list", "xfoo3", "xxx")
+      val request = new ListObjectsRequest()
+      request.setBucketName("list")
+      request.setMarker("foo1")
+      val list = s3.listObjects(request).getObjectSummaries.asScala.toList
+      val expectedResult  = List("foo2", "xfoo3")
+      list.map(_.getKey) should contain theSameElementsAs(expectedResult)
+    }
     it should "list objects in subfolders with prefix" in {
       s3.createBucket("list2")
       s3.putObject("list2", "one/foo1/1", "xxx")

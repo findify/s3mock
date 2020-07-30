@@ -8,7 +8,7 @@ but without hitting real S3 endpoints.
 
 Implemented API methods:
 * list buckets
-* list objects (all & by prefix)
+* list objects (all, by prefix, and with marker)
 * create bucket
 * delete bucket
 * put object (via PUT, POST, multipart and chunked uploads are also supported)

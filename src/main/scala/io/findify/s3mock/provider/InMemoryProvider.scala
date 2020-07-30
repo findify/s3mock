@@ -37,7 +37,7 @@ class InMemoryProvider extends Provider with LazyLogging {
     ListAllMyBuckets("root", UUID.randomUUID().toString, buckets.toList)
   }
 
-  override def listBucket(bucket: String, prefix: Option[String], delimiter: Option[String], maxkeys: Option[Int]): ListBucket = {
+  override def listBucket(bucket: String, prefix: Option[String], delimiter: Option[String], marker: Option[String], maxkeys: Option[Int]): ListBucket = {
     def commonPrefix(dir: String, p: String, d: String): Option[String] = {
       dir.indexOf(d, p.length) match {
         case -1 => None
@@ -57,7 +57,10 @@ class InMemoryProvider extends Provider with LazyLogging {
           case Some(del) => matchResults.flatMap(f => commonPrefix(f.key, prefix2, del)).toList.sorted.distinct
           case None => Nil
         }
-        val filteredFiles: List[Content] = matchResults.filterNot(f => commonPrefixes.exists(p => f.key.startsWith(p))).toList
+        val filteredFiles: List[Content] = marker.fold(matchResults) { m =>
+            matchResults.filter(_.key > m)
+          }
+          .filterNot(f => commonPrefixes.exists(p => f.key.startsWith(p))).toList
         val count = maxkeys.getOrElse(Int.MaxValue)
         val result = filteredFiles.sortBy(_.key)
         ListBucket(bucket, prefix, delimiter, commonPrefixes, result.take(count).take(count), isTruncated = result.size>count)

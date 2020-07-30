@@ -32,7 +32,7 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     ListAllMyBuckets("root", UUID.randomUUID().toString, buckets)
   }
 
-  override def listBucket(bucket: String, prefix: Option[String], delimiter: Option[String], maxkeys: Option[Int]) = {
+  override def listBucket(bucket: String, prefix: Option[String], delimiter: Option[String], marker: Option[String], maxkeys: Option[Int]) = {
     def commonPrefix(dir: String, p: String, d: String): Option[String] = {
       dir.indexOf(d, p.length) match {
         case -1 => None
@@ -61,7 +61,10 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
       case Some(del) => files.flatMap(f => commonPrefix(f.key, prefixNoLeadingSlash, del)).distinct.sorted
       case None => Nil
     }
-    val filteredFiles = files.filterNot(f => commonPrefixes.exists(p => f.key.startsWith(p)))
+    val filteredFiles = marker.fold(files) { m =>
+        files.filter(_.key > m)
+      }
+      .filterNot(f => commonPrefixes.exists(p => f.key.startsWith(p)))
     val count = maxkeys.getOrElse(Int.MaxValue)
     val result = filteredFiles.sortBy(_.key)
     ListBucket(bucket, prefix, delimiter, commonPrefixes, result.take(count), isTruncated = result.size>count)

@@ -63,7 +63,7 @@ class S3Mock(port:Int, provider:Provider)(implicit system:ActorSystem = ActorSys
       }
 
     bind = Await.result(http.bindAndHandle(route, "0.0.0.0", port), Duration.Inf)
-    logger.info(s"bound to 0.0.0.0:$port")
+    logger.info(s"bound to 0.0.0.0:${bind.localAddress.getPort}")
     bind
   }
 

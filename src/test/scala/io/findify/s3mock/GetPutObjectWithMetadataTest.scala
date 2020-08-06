@@ -1,6 +1,7 @@
 package io.findify.s3mock
 
 import java.io.ByteArrayInputStream
+import java.util.Date
 
 import com.amazonaws.services.s3.model.{ObjectMetadata, S3Object}
 
@@ -20,13 +21,15 @@ class GetPutObjectWithMetadataTest extends S3MockTest {
       val metadata: ObjectMetadata = new ObjectMetadata()
       metadata.setContentType("application/json")
       metadata.setUserMetadata(Map("metamaic" -> "maic").asJava)
+      val lastmodified = new Date(150000000000L)
+      metadata.setLastModified(lastmodified)
 
       s3.putObject("getput", "foo", is, metadata)
 
       val s3Object: S3Object = s3.getObject("getput", "foo")
       val actualMetadata: ObjectMetadata = s3Object.getObjectMetadata
       actualMetadata.getContentType shouldBe "application/json"
-
+      actualMetadata.getLastModified shouldBe lastmodified
       getContent(s3Object) shouldBe "bar"
     }
 

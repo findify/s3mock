@@ -1,7 +1,9 @@
 package io.findify.s3mock.route
 
 import java.lang.Iterable
+import java.text.SimpleDateFormat
 import java.util
+import java.util.Date
 
 import akka.http.javadsl.model.HttpHeader
 import akka.http.scaladsl.model.HttpRequest
@@ -36,9 +38,11 @@ object MetadataUtil extends LazyLogging {
       //      else if (ignoredHeaders.contains(key)) {
       // ignore...
       //      }
-      else if (key.equalsIgnoreCase(Headers.LAST_MODIFIED)) try
-        metadata.setHeader(key, ServiceUtils.parseRfc822Date(header.value()))
+      else if (key.equalsIgnoreCase(Headers.LAST_MODIFIED)) try {
+        val sdf = new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy")
 
+        metadata.setHeader(key, sdf.parse(header.value))
+      }
       catch {
         case pe: Exception => logger.warn("Unable to parse last modified date: " + header.value(), pe)
       }
@@ -69,6 +73,9 @@ object MetadataUtil extends LazyLogging {
 
     if(metadata.getContentType == null){
       metadata.setContentType(request.entity.getContentType.toString)
+    }
+     if(metadata.getLastModified == null){
+      metadata.setLastModified(new Date())
     }
     metadata
   }

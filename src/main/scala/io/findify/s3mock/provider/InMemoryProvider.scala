@@ -75,8 +75,7 @@ class InMemoryProvider extends Provider with LazyLogging {
     bucketDataStore.get(bucket) match {
       case Some(bucketContent) =>
         logger.debug(s"putting object for s3://$bucket/$key, bytes = ${data.length}")
-        bucketContent.keysInBucket.put(key, KeyContents(DateTime.now, data))
-        objectMetadata.setLastModified(org.joda.time.DateTime.now().toDate)
+        bucketContent.keysInBucket.put(key, KeyContents(DateTime(objectMetadata.getLastModified.getTime), data))
         metadataStore.put(bucket, key, objectMetadata)
       case None => throw NoSuchBucketException(bucket)
     }
@@ -132,7 +131,6 @@ class InMemoryProvider extends Provider with LazyLogging {
         val hash = DigestUtils.md5Hex(completeBytes)
         metadataStore.get(bucket, key).foreach {m =>
           m.setContentMD5(hash)
-          m.setLastModified(org.joda.time.DateTime.now().toDate)
         }
         CompleteMultipartUploadResult(bucket, key, hash)
       case None => throw NoSuchBucketException(bucket)

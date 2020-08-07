@@ -75,7 +75,7 @@ class InMemoryProvider extends Provider with LazyLogging {
     bucketDataStore.get(bucket) match {
       case Some(bucketContent) =>
         logger.debug(s"putting object for s3://$bucket/$key, bytes = ${data.length}")
-        bucketContent.keysInBucket.put(key, KeyContents(DateTime.now, data))
+        bucketContent.keysInBucket.put(key, KeyContents(DateTime(objectMetadata.getLastModified.getTime), data))
         metadataStore.put(bucket, key, objectMetadata)
       case None => throw NoSuchBucketException(bucket)
     }

@@ -41,7 +41,7 @@ object MetadataUtil extends LazyLogging {
       else if (key.equalsIgnoreCase(Headers.LAST_MODIFIED)) try {
         val sdf = new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy")
 
-        metadata.setHeader(key, ServiceUtils.parseRfc822Date(ServiceUtils.formatRfc822Date(sdf.parse(header.value))))
+        metadata.setHeader(key, sdf.parse(header.value))
       }
       catch {
         case pe: Exception => logger.warn("Unable to parse last modified date: " + header.value(), pe)

@@ -6,7 +6,7 @@ import java.util.{Date, UUID}
 import akka.http.scaladsl.model.DateTime
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.typesafe.scalalogging.LazyLogging
-import io.findify.s3mock.error.{NoSuchBucketException, NoSuchKeyException}
+import io.findify.s3mock.error.{NoSuchBucketException, NoSuchKeyException, NoSuchUploadException}
 import io.findify.s3mock.provider.metadata.{InMemoryMetadataStore, MetadataStore}
 import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
 import io.findify.s3mock.response._
@@ -25,7 +25,7 @@ class InMemoryProvider extends Provider with LazyLogging {
 
   private case class KeyContents(lastModificationTime: DateTime, data: Array[Byte])
 
-  private case class MultipartChunk(partNo: Int, data: Array[Byte]) extends Ordered[MultipartChunk] {
+  private case class MultipartChunk(partNo: Int, data: Array[Byte], etag: String, lastModifed: Instant) extends Ordered[MultipartChunk] {
     override def compare(that: MultipartChunk): Int = partNo compareTo that.partNo
   }
 
@@ -117,7 +117,8 @@ class InMemoryProvider extends Provider with LazyLogging {
     bucketDataStore.get(bucket) match {
       case Some(_) =>
         logger.debug(s"uploading multipart chunk $partNumber for s3://$bucket/$key")
-        multipartTempStore.getOrElseUpdate(uploadId, new mutable.TreeSet).add(MultipartChunk(partNumber, data))
+        val chunk = MultipartChunk(partNumber, data, DigestUtils.md5Hex(data), Instant.now())
+        multipartTempStore.getOrElseUpdate(uploadId, new mutable.TreeSet).add(chunk)
       case None => throw NoSuchBucketException(bucket)
     }
   }
@@ -136,6 +137,33 @@ class InMemoryProvider extends Provider with LazyLogging {
         }
         CompleteMultipartUploadResult(bucket, key, hash)
       case None => throw NoSuchBucketException(bucket)
+    }
+  }
+
+  override def listParts(bucket: String, key: String, uploadId: String, markerOpt: Option[Int], countOpt: Option[Int]): ListParts = {
+    val marker = markerOpt.filter(0.to(10000).contains(_)).getOrElse(0)
+    val count = countOpt.filter(1.to(10000).contains(_)).getOrElse(10000)
+
+    logger.debug(s"listing parts for upload $uploadId to s3://$bucket/$key (marker $marker, count $count)")
+
+    if(!bucketDataStore.contains(bucket)) throw NoSuchBucketException(bucket)
+
+    multipartTempStore.get(uploadId) match {
+      case Some(chunks) => {
+        val sorted = chunks.toSeq.sortBy(_.partNo)
+        val highestNumber = sorted.lastOption.map(_.partNo).getOrElse(0)
+
+        val parts = sorted
+          .filter(_.partNo >= marker)
+          .take(count)
+          .map(chunk => Part(chunk.partNo, chunk.etag, chunk.data.length, chunk.lastModifed))
+          .toList
+
+        val nextMarker = parts.lastOption.map(_.partNo).filter(_ < highestNumber)
+
+        ListParts(bucket, key, uploadId, marker, nextMarker, count, parts)
+      }
+      case None => throw NoSuchUploadException(bucket, key, uploadId)
     }
   }
 

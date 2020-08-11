@@ -7,7 +7,7 @@ import better.files.File
 import better.files.File.OpenOptions
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.typesafe.scalalogging.LazyLogging
-import io.findify.s3mock.error.{NoSuchBucketException, NoSuchKeyException}
+import io.findify.s3mock.error.{NoSuchBucketException, NoSuchKeyException, NoSuchUploadException}
 import io.findify.s3mock.provider.metadata.{MapMetadataStore, MetadataStore}
 import io.findify.s3mock.request.{CompleteMultipartUpload, CreateBucketConfiguration}
 import io.findify.s3mock.response._
@@ -114,12 +114,11 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
   override def putObjectMultipartComplete(bucket:String, key:String, uploadId:String, request:CompleteMultipartUpload): CompleteMultipartUploadResult = {
     val bucketFile = File(s"$dir/$bucket")
     if (!bucketFile.exists) throw NoSuchBucketException(bucket)
-    val files = request.parts.map(part => File(s"$dir/.mp/$bucket/$key/$uploadId/${part.partNumber}"))
-    val parts = files.map(f => f.byteArray)
+    val partFiles = request.parts.map(part => File(s"$dir/.mp/$bucket/$key/$uploadId/${part.partNumber}"))
     val file = File(s"$dir/$bucket/$key")
     file.createIfNotExists(createParents = true)
-    val data = parts.fold(Array[Byte]())(_ ++ _)
-    file.writeBytes(data.toIterator)
+    file.clear()
+    partFiles.foreach(partFile => file.appendByteArray(partFile.byteArray))
     File(s"$dir/.mp/$bucket/$key").delete()
     val hash = file.md5
     metadataStore.get(bucket, key).foreach {m =>
@@ -128,6 +127,31 @@ class FileProvider(dir:String) extends Provider with LazyLogging {
     }
     logger.debug(s"completed multipart upload for s3://$bucket/$key")
     CompleteMultipartUploadResult(bucket, key, hash)
+  }
+
+  override def listParts(bucket: String, key: String, uploadId: String, markerOpt: Option[Int], countOpt: Option[Int]): ListParts = {
+    val marker = markerOpt.filter(0.to(10000).contains(_)).getOrElse(0)
+    val count = countOpt.filter(1.to(10000).contains(_)).getOrElse(10000)
+
+    logger.debug(s"listing parts for upload $uploadId to s3://$bucket/$key (marker $marker, count $count)")
+
+    val bucketDir = File(s"$dir/$bucket")
+    if (!bucketDir.exists) throw NoSuchBucketException(bucket)
+
+    val uploadDir = File(s"$dir/.mp/$bucket/$key/$uploadId")
+    if (!uploadDir.exists) throw NoSuchUploadException(bucket, key, uploadId)
+
+    val partFiles = uploadDir.list.flatMap(file => file.name.toIntOption.map { partNo => (partNo, file) }).toSeq.sortBy(_._1)
+    val highestNumber = partFiles.lastOption.map(_._1).getOrElse(0)
+
+    val parts = partFiles
+      .filter { case (partNo, _) => partNo >= marker }
+      .take(count)
+      .map { case (partNo, file) => Part(partNo, file.md5.toLowerCase, file.size, file.lastModifiedTime) }
+
+    val nextMarker = parts.lastOption.map(_.partNo).filter(_ < highestNumber)
+
+    ListParts(bucket, key, uploadId, markerOpt.getOrElse(0), nextMarker, count, parts.toList)
   }
 
   override def copyObject(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String, newMeta: Option[ObjectMetadata] = None): CopyObjectResult = {

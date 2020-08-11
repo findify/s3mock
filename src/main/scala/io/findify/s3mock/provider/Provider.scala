@@ -7,7 +7,6 @@ import io.findify.s3mock.response._
 
 
 case class GetObjectData(bytes: Array[Byte], metadata: Option[ObjectMetadata])
-
 /**
   * Interface for provider implementations.
   */
@@ -21,6 +20,7 @@ trait Provider {
   def putObjectMultipartStart(bucket:String, key:String, metadata: ObjectMetadata):InitiateMultipartUploadResult
   def putObjectMultipartPart(bucket:String, key:String, partNumber:Int, uploadId:String, data:Array[Byte]):Unit
   def putObjectMultipartComplete(bucket:String, key:String, uploadId:String, request:CompleteMultipartUpload):CompleteMultipartUploadResult
+  def listParts(bucket: String, key: String, uploadId: String, marker: Option[Int], count: Option[Int]): ListParts
   def deleteObject(bucket:String, key:String):Unit
   def deleteBucket(bucket:String):Unit
   def copyObject(sourceBucket: String, sourceKey: String, destBucket: String, destKey: String, newMeta: Option[ObjectMetadata] = None): CopyObjectResult

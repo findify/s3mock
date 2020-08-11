@@ -2,6 +2,7 @@ package io.findify.s3mock
 
 import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
+import java.time.Instant
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -37,6 +38,25 @@ class MultipartUploadTest extends S3MockTest {
       response2.status.intValue() shouldBe 200
       val response3 = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.POST, uri = s"http://127.0.0.1:$port/getput/foo2?partNumber=2&uploadId=$uploadId", entity = "boo")), 10.minutes)
       response3.status.intValue() shouldBe 200
+
+      val response4 = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.GET, uri = s"http://127.0.0.1:$port/getput/foo2?uploadId=$uploadId")), 10.minutes)
+      response4.status.intValue() shouldBe 200
+      val data2 = Await.result(response4.entity.dataBytes.fold(ByteString(""))(_ ++ _).runWith(Sink.head), 10.seconds)
+      val listParts = scala.xml.XML.loadString(data2.utf8String)
+      (listParts \ "Bucket").text shouldBe "getput"
+      (listParts \ "Key").text shouldBe "foo2"
+      (listParts \ "UploadId").text shouldBe uploadId
+      (listParts \ "IsTruncated").text shouldBe "false"
+      val parts = (listParts \ "Part").map(part => {
+        Instant.parse((part \ "LastModified").text)
+        (
+          (part \ "PartNumber").text.toInt,
+          (part \ "ETag").text,
+          (part \ "Size").text.toInt,
+        )
+      })
+      parts shouldBe Seq((1, DigestUtils.md5Hex("foo"), 3), (2, DigestUtils.md5Hex("boo"), 3))
+
       val commit = """<CompleteMultipartUpload>
           |  <Part>
           |    <PartNumber>1</PartNumber>
@@ -47,8 +67,8 @@ class MultipartUploadTest extends S3MockTest {
           |    <ETag>ETag</ETag>
           |  </Part>
           |</CompleteMultipartUpload>""".stripMargin
-      val response4 = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.POST, uri = s"http://127.0.0.1:$port/getput/foo2?uploadId=$uploadId", entity = commit)), 10.minutes)
-      response4.status.intValue() shouldBe 200
+      val response5 = Await.result(http.singleRequest(HttpRequest(method = HttpMethods.POST, uri = s"http://127.0.0.1:$port/getput/foo2?uploadId=$uploadId", entity = commit)), 10.minutes)
+      response5.status.intValue() shouldBe 200
 
       getContent(s3.getObject("getput", "foo2")) shouldBe "fooboo"
     }

@@ -96,41 +96,79 @@ Java:
     api.shutdown(); // kills the underlying actor system. Use api.stop() to just unbind the port.
 ```
 
+Scala with AWS S3 SDK2:
+```scala
+
+import io.findify.s3mock.S3Mock
+import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.s3.model.{PutObjectRequest, RequestPayer}
+import software.amazon.awssdk.services.s3.{S3Client, S3Configuration}
+
+val api: S3Mock = new S3Mock.Builder().withPort(8001).withInMemoryBackend().build()
+api.start
+
+val client: S3Client = S3Client
+  .builder()
+  .region(Region.US_WEST_2)
+  .endpointOverride(new URI("http://localhost:8001"))
+  .credentialsProvider(AnonymousCredentialsProvider.create())
+  .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
+  .build()
+
+client.createBucket(CreateBucketRequest.builder().bucket("bucketName").build())
+
+client.putObject(
+  PutObjectRequest
+    .builder()
+    .requestPayer(RequestPayer.REQUESTER)
+    .bucket("bucketName)
+      .key(key)
+      .contentLength("Hello World!".bytes.length.toLong)
+      .build(),
+      RequestBody.fromString("Hello World!")
+    )
+
+api.shutdown() // this one terminates the actor system. Use api.stop() to just unbind the service without messing with the ActorSystem
+```
+
+
 Scala with AWS S3 SDK:
 ```scala
-    import com.amazonaws.auth.AWSStaticCredentialsProvider
-    import com.amazonaws.auth.AnonymousAWSCredentials
-    import com.amazonaws.client.builder.AwsClientBuilder
-    import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
-    import com.amazonaws.services.s3.AmazonS3
-    import com.amazonaws.services.s3.AmazonS3Builder
-    import com.amazonaws.services.s3.AmazonS3Client
-    import com.amazonaws.services.s3.AmazonS3ClientBuilder
-    import io.findify.s3mock.S3Mock
+import io.findify.s3mock.S3Mock
+import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.s3.model.{CreateBucketRequest, PutObjectRequest, RequestPayer}
+import software.amazon.awssdk.services.s3.{S3Client, S3Configuration}
+import java.net.URI
 
-    
-    /** Create and start S3 API mock. */
-    val api = S3Mock(port = 8001, dir = "/tmp/s3")
-    api.start
+val api: S3Mock = new S3Mock.Builder().withPort(8001).withInMemoryBackend().build()
+api.start
 
-    /* AWS S3 client setup.
-     *  withPathStyleAccessEnabled(true) trick is required to overcome S3 default 
-     *  DNS-based bucket access scheme
-     *  resulting in attempts to connect to addresses like "bucketname.localhost"
-     *  which requires specific DNS setup.
-     */
-    val endpoint = new EndpointConfiguration("http://localhost:8001", "us-west-2")
-    val client = AmazonS3ClientBuilder
-      .standard
-      .withPathStyleAccessEnabled(true)  
-      .withEndpointConfiguration(endpoint)
-      .withCredentials(new AWSStaticCredentialsProvider(new AnonymousAWSCredentials()))     
-      .build
+val client: S3Client = S3Client
+  .builder()
+  .region(Region.US_WEST_2)
+  .endpointOverride(new URI("http://localhost:8001"))
+  .credentialsProvider(AnonymousCredentialsProvider.create())
+  .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
+  .build()
 
-    /** Use it as usual. */
-    client.createBucket("foo")
-    client.putObject("foo", "bar", "baz")
-    api.shutdown() // this one terminates the actor system. Use api.stop() to just unbind the service without messing with the ActorSystem
+client.createBucket(CreateBucketRequest.builder().bucket("bucketName").build())
+
+client.putObject(
+  PutObjectRequest
+    .builder()
+    .requestPayer(RequestPayer.REQUESTER)
+    .bucket("bucketName")
+    .key("key")
+    .contentLength("Hello World!".getBytes().length.toLong)
+    .build(),
+    RequestBody.fromString("Hello World!")
+)
+
+api.shutdown() // this one terminates the actor system. Use api.stop() to just unbind the service without messing with the ActorSystem
 ```
 
 Scala with Alpakka 1.0.0:

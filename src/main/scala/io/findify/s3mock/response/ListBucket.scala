@@ -11,9 +11,15 @@ case class ListBucket(bucket:String, prefix: Option[String], delimiter: Option[S
   def toXML =
     <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
       <Name>{bucket}</Name>
-      { prefix.map(p => <Prefix>{p}</Prefix> ) }
-      { delimiter.map(d => <Delimiter>{d}</Delimiter>) }
-      { if (commonPrefixes.nonEmpty) <CommonPrefixes> {commonPrefixes.map(cp => <Prefix>{cp}</Prefix>)} </CommonPrefixes> }
+      { if (prefix.isDefined) <Prefix>{prefix.get}</Prefix> }
+      { if (delimiter.isDefined) <Delimiter>{delimiter.get}</Delimiter> }
+      { if (commonPrefixes.nonEmpty)
+      {commonPrefixes.map(cp =>
+      <CommonPrefixes>
+        <Prefix>{cp}</Prefix>
+      </CommonPrefixes>
+      )}
+      }
       <KeyCount>{contents.length}</KeyCount>
       <MaxKeys>1000</MaxKeys>
       <IsTruncated>{isTruncated}</IsTruncated>

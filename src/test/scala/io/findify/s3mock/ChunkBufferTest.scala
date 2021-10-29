@@ -1,12 +1,13 @@
 package io.findify.s3mock
 
 import akka.util.ByteString
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
   * Created by shutty on 8/11/16.
   */
-class ChunkBufferTest extends FlatSpec with Matchers {
+class ChunkBufferTest extends AnyFlatSpec with Matchers {
   "chunk buffer" should "detect header" in {
     val cb = new ChunkBuffer()
     cb.addChunk(ByteString("3;chunk-signature=1234567890123456789012345678901234567890123456789012345678901234\r\nfoo\r\n"))

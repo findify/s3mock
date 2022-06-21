@@ -1,6 +1,6 @@
 name := "s3mock"
 
-version := "0.2.6"
+version := "0.2.7"
 
 organization := "io.findify"
 
@@ -8,7 +8,7 @@ scalaVersion in ThisBuild := "2.13.2"
 
 crossScalaVersions in ThisBuild := Seq("2.11.12", "2.12.10","2.13.2")
 
-val akkaVersion = "2.5.31"
+val akkaVersion = "2.6.19"
 
 licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
 
@@ -16,7 +16,7 @@ homepage := Some(url("https://github.com/findify/s3mock"))
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-  "com.typesafe.akka" %% "akka-http" % "10.1.12",
+  "com.typesafe.akka" %% "akka-http" % "10.2.9",
   "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % "test",
   "org.scala-lang.modules" %% "scala-xml" % "1.3.0",
   "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.6",

@@ -1,8 +1,8 @@
 package io.findify.s3mock.awscli
 
-import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
-import akka.stream.scaladsl.Sink
-import akka.util.ByteString
+import org.apache.pekko.http.scaladsl.model.{HttpMethods, HttpRequest}
+import org.apache.pekko.stream.scaladsl.Sink
+import org.apache.pekko.util.ByteString
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAccessor

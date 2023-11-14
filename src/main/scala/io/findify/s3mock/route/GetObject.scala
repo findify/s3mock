@@ -4,10 +4,10 @@ import java.io.StringWriter
 import java.net.URLDecoder
 import java.util.Date
 
-import akka.http.scaladsl.model.HttpEntity.Strict
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.{RawHeader, `Last-Modified`}
-import akka.http.scaladsl.server.Directives._
+import org.apache.pekko.http.scaladsl.model.HttpEntity.Strict
+import org.apache.pekko.http.scaladsl.model._
+import org.apache.pekko.http.scaladsl.model.headers.{RawHeader, `Last-Modified`}
+import org.apache.pekko.http.scaladsl.server.Directives._
 import com.amazonaws.services.s3.Headers
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.util.DateUtils

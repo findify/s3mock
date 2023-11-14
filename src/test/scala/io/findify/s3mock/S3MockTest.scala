@@ -1,9 +1,9 @@
 package io.findify.s3mock
 
-import akka.actor.ActorSystem
-import akka.stream.alpakka.s3.S3Settings
-import akka.stream.alpakka.s3.scaladsl.S3
-import akka.stream.{ActorMaterializer, Materializer}
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.connectors.s3.S3Settings
+import org.apache.pekko.stream.connectors.s3.scaladsl.S3
+import org.apache.pekko.stream.{ActorMaterializer, Materializer}
 import better.files.File
 import com.amazonaws.auth.{AWSStaticCredentialsProvider, AnonymousAWSCredentials, BasicAWSCredentials, DefaultAWSCredentialsProviderChain}
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration

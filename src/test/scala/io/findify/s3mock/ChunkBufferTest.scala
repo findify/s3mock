@@ -1,6 +1,6 @@
 package io.findify.s3mock
 
-import akka.util.ByteString
+import org.apache.pekko.util.ByteString
 import org.scalatest.{FlatSpec, Matchers}
 
 /**

@@ -1,6 +1,6 @@
 package io.findify.s3mock.response
 
-import akka.http.scaladsl.model.DateTime
+import org.apache.pekko.http.scaladsl.model.DateTime
 
 
 /**

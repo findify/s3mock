@@ -1,10 +1,10 @@
 package io.findify.s3mock.alpakka
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.model.headers.ByteRange
-import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.Sink
-import akka.util.ByteString
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.model.headers.ByteRange
+import org.apache.pekko.stream.ActorMaterializer
+import org.apache.pekko.stream.scaladsl.Sink
+import org.apache.pekko.util.ByteString
 import com.typesafe.config.ConfigFactory
 import io.findify.s3mock.S3MockTest
 

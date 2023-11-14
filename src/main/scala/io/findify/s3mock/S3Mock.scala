@@ -1,10 +1,10 @@
 package io.findify.s3mock
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.Directives._
-import akka.stream.ActorMaterializer
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.http.scaladsl.model.{HttpResponse, StatusCodes}
+import org.apache.pekko.http.scaladsl.server.Directives._
+import org.apache.pekko.stream.ActorMaterializer
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.provider.{FileProvider, InMemoryProvider, Provider}
 import io.findify.s3mock.route._

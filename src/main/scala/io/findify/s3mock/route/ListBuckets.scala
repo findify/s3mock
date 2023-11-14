@@ -1,7 +1,7 @@
 package io.findify.s3mock.route
 
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.server.Directives._
+import org.apache.pekko.http.scaladsl.model._
+import org.apache.pekko.http.scaladsl.server.Directives._
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.provider.Provider
 

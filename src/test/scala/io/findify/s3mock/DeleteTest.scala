@@ -1,7 +1,7 @@
 package io.findify.s3mock
 
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model._
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.http.scaladsl.model._
 import com.amazonaws.services.s3.model.{AmazonS3Exception, DeleteObjectsRequest}
 
 import scala.collection.JavaConverters._

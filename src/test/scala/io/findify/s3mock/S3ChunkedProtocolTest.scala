@@ -1,9 +1,9 @@
 package io.findify.s3mock
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Sink, Source}
-import akka.util.ByteString
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.ActorMaterializer
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.util.ByteString
 import org.scalatest.{FlatSpec, Matchers}
 import scala.concurrent.duration._
 import scala.concurrent.Await

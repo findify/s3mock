@@ -2,8 +2,8 @@ package io.findify.s3mock.route
 
 import java.util
 
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.Directives._
+import org.apache.pekko.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
+import org.apache.pekko.http.scaladsl.server.Directives._
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.{InternalErrorException, NoSuchBucketException, NoSuchKeyException}

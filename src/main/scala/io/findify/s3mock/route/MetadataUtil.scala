@@ -3,8 +3,8 @@ package io.findify.s3mock.route
 import java.lang.Iterable
 import java.util
 
-import akka.http.javadsl.model.HttpHeader
-import akka.http.scaladsl.model.HttpRequest
+import org.apache.pekko.http.javadsl.model.HttpHeader
+import org.apache.pekko.http.scaladsl.model.HttpRequest
 import com.amazonaws.AmazonClientException
 import com.amazonaws.services.s3.Headers
 import com.amazonaws.services.s3.internal.ServiceUtils

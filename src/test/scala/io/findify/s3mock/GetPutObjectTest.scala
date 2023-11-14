@@ -3,10 +3,10 @@ package io.findify.s3mock
 import java.io.ByteArrayInputStream
 import java.util
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
-import akka.stream.ActorMaterializer
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.http.scaladsl.model.{HttpMethods, HttpRequest}
+import org.apache.pekko.stream.ActorMaterializer
 import com.amazonaws.services.s3.model._
 import com.amazonaws.util.IOUtils
 
@@ -111,10 +111,10 @@ class GetPutObjectTest extends S3MockTest {
 
     it should "work with = in path" in {
       s3.createBucket("urlencoded")
-      s3.listBuckets().exists(_.getName == "urlencoded") shouldBe true
+      s3.listBuckets().asScala.exists(_.getName == "urlencoded") shouldBe true
       s3.putObject("urlencoded", "path/with=123/foo", "bar=")
       s3.putObject("urlencoded", "path/withoutequals/foo", "bar")
-      val result = s3.listObjects("urlencoded").getObjectSummaries.toList.map(_.getKey)
+      val result = s3.listObjects("urlencoded").getObjectSummaries.asScala.toList.map(_.getKey)
       result shouldBe List("path/with=123/foo", "path/withoutequals/foo")
       getContent(s3.getObject("urlencoded", "path/with=123/foo")) shouldBe "bar="
       getContent(s3.getObject("urlencoded", "path/withoutequals/foo")) shouldBe "bar"

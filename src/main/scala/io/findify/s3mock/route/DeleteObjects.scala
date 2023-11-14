@@ -1,7 +1,7 @@
 package io.findify.s3mock.route
 
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes, Uri}
-import akka.http.scaladsl.server.Directives.{path, _}
+import org.apache.pekko.http.scaladsl.model.{HttpResponse, StatusCodes, Uri}
+import org.apache.pekko.http.scaladsl.server.Directives.{path, _}
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.NoSuchKeyException
 import io.findify.s3mock.provider.Provider

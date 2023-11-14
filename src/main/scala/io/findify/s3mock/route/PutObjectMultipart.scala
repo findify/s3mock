@@ -1,12 +1,12 @@
 package io.findify.s3mock.route
 
-import akka.NotUsed
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.ETag
-import akka.http.scaladsl.server.Directives._
-import akka.stream.scaladsl.{Flow, Sink}
-import akka.stream.{FlowShape, Graph, Materializer}
-import akka.util.ByteString
+import org.apache.pekko.NotUsed
+import org.apache.pekko.http.scaladsl.model._
+import org.apache.pekko.http.scaladsl.model.headers.ETag
+import org.apache.pekko.http.scaladsl.server.Directives._
+import org.apache.pekko.stream.scaladsl.{Flow, Sink}
+import org.apache.pekko.stream.{FlowShape, Graph, Materializer}
+import org.apache.pekko.util.ByteString
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.S3ChunkedProtocolStage
 import io.findify.s3mock.error.{InternalErrorException, NoSuchBucketException}

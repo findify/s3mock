@@ -2,7 +2,7 @@ package io.findify.s3mock.provider
 import java.util.UUID
 import java.io.{FileInputStream, File => JFile}
 
-import akka.http.scaladsl.model.DateTime
+import org.apache.pekko.http.scaladsl.model.DateTime
 import better.files.File
 import better.files.File.OpenOptions
 import com.amazonaws.services.s3.model.ObjectMetadata

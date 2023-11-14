@@ -1,10 +1,10 @@
 package io.findify.s3mock.route
 
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.Directives._
-import akka.stream.Materializer
-import akka.stream.scaladsl.Sink
-import akka.util.ByteString
+import org.apache.pekko.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
+import org.apache.pekko.http.scaladsl.server.Directives._
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.Sink
+import org.apache.pekko.util.ByteString
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.S3ChunkedProtocolStage

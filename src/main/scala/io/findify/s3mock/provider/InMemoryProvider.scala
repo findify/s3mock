@@ -3,7 +3,7 @@ package io.findify.s3mock.provider
 import java.time.Instant
 import java.util.{Date, UUID}
 
-import akka.http.scaladsl.model.DateTime
+import org.apache.pekko.http.scaladsl.model.DateTime
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.typesafe.scalalogging.LazyLogging
 import io.findify.s3mock.error.{NoSuchBucketException, NoSuchKeyException}

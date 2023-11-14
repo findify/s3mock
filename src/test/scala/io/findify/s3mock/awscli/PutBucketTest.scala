@@ -1,6 +1,6 @@
 package io.findify.s3mock.awscli
 
-import akka.http.scaladsl.model.{HttpMethods, HttpRequest}
+import org.apache.pekko.http.scaladsl.model.{HttpMethods, HttpRequest}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._

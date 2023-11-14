@@ -2,8 +2,8 @@ package io.findify.s3mock
 /**
   * Created by shutty on 8/9/16.
   */
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model._
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.http.scaladsl.model._
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
